@@ -265,11 +265,11 @@ $$ \mathbf{L}_m = m_m \, \mathbf{x}_m \times \mathbf{v}_m. \tag{14} $$
 
 Substituting Eqs. (9) and (10):
 
-$$ \mathbf{L}_m = \frac{m_i \mathbf{x}_i + m_j \mathbf{x}_j}{m_i + m_j} \times \left( m_i \mathbf{v}_i + m_j \mathbf{v}_j \right). \tag{15} $$
+$$\mathbf{L}_m = \frac{m_i \mathbf{x}_i + m_j \mathbf{x}_j}{m_i + m_j} \times (m_i \mathbf{v}_i + m_j \mathbf{v}_j). \tag{15}$$
 
 Expanding and grouping terms:
 
-$$ \mathbf{L}_m = m_i \, \mathbf{x}_i \times \mathbf{v}_i + m_j \, \mathbf{x}_j \times \mathbf{v}_j - \frac{m_i m_j}{m_i + m_j} \left( \mathbf{x}_i - \mathbf{x}_j \right) \times \left( \mathbf{v}_i - \mathbf{v}_j \right). \tag{16} $$
+$$\mathbf{L}_m = m_i \, \mathbf{x}_i \times \mathbf{v}_i + m_j \, \mathbf{x}_j \times \mathbf{v}_j - \frac{m_i m_j}{m_i + m_j} (\mathbf{x}_i - \mathbf{x}_j) \times (\mathbf{v}_i - \mathbf{v}_j). \tag{16}$$
 
 The residual (last term) vanishes exactly when either the two particles are co-located
 ($\mathbf{x}_i = \mathbf{x}_j$)
