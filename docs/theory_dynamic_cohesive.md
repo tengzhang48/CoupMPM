@@ -53,7 +53,7 @@ $$
 \mathbf{x}_{0,i}, \quad \mathbf{x}_{0,j}, \quad
 \mathbf{n}_0 = \frac{\mathbf{x}_j - \mathbf{x}_i}{\|\mathbf{x}_j - \mathbf{x}_i\|},
 \quad \delta_0 = \|\mathbf{x}_j - \mathbf{x}_i\|, \quad
-A_{\mathrm{ref}} = V_i^{0\,2/3} \text{ (3-D)}.
+A_{\mathrm{ref}} = (V_i^0)^{2/3} \text{ (3-D)}.
 $$
 
 ### 2.2 Force Computation
@@ -65,7 +65,7 @@ MPM P2G step as external forces, exactly as LAMMPS pair-style interactions do.
 The total cohesive force on particle $i$ is
 
 $$
-\mathbf{F}_i^{\mathrm{coh}}
+\mathbf{f}_i^{\mathrm{coh}}
 = A_{\mathrm{ref}} \, (1 - D) \left[ T_n \, \hat{\mathbf{n}} + T_t \, \hat{\mathbf{t}} \right],
 $$
 
@@ -194,10 +194,18 @@ $$
               + \left(\frac{\delta_t^{\max}}{\delta_t^*}\right)^2},
 $$
 
+where $\delta_n^{\max}$ and $\delta_t^{\max}$ are the running maxima of the normal and
+tangential separations, and the combined failure threshold
+
+$$
+\bar{r}_{\mathrm{fail}} = \sqrt{\left(\frac{\delta_n^{\max,\mathrm{fail}}}{\delta_n^*}\right)^2
+                               + \left(\frac{\delta_t^{\max,\mathrm{fail}}}{\delta_t^*}\right)^2},
+$$
+
 damage accumulates for $\bar{r} > 1$ according to
 
 $$
-D = \min\!\left(1,\; \frac{\bar{r} - 1}{\delta_n^{\max} / \delta_n^* - 1}\right),
+D = \min\!\left(1,\; \frac{\bar{r} - 1}{\bar{r}_{\mathrm{fail}} - 1}\right),
 $$
 
 and the effective traction is $(1-D) \, T$. The bond is deactivated when $D \geq 1$ or
@@ -309,9 +317,9 @@ deformation states, CoupMPM uses the **mass-weighted average cofactor**:
 
 $$
 \boxed{
-\mathbf{n} = \frac{1}{\|\hat{\mathbf{n}}\|}\,\hat{\mathbf{n}},
+\hat{\mathbf{n}} = \frac{\tilde{\mathbf{n}}}{\|\tilde{\mathbf{n}}\|},
 \qquad
-\hat{\mathbf{n}} =
+\tilde{\mathbf{n}} =
 \left[\frac{m_i \, \mathrm{cof}(\mathbf{F}_i) + m_j \, \mathrm{cof}(\mathbf{F}_j)}{m_i + m_j}\right]
 \mathbf{n}_0,
 }
@@ -321,10 +329,10 @@ where $m_i$ and $m_j$ are the masses of particles $i$ and $j$. The result is nor
 to a unit vector. If either Jacobian is degenerate ($|J_i|$ or $|J_j| < 10^{-20}$), the
 algorithm falls back to the undeformed reference normal $\mathbf{n}_0$.
 
-In component form, the $d$-th component of $\hat{\mathbf{n}}$ is
+In component form, the $d$-th component of $\tilde{\mathbf{n}}$ is
 
 $$
-\hat{n}_d
+\tilde{n}_d
 = \sum_{e=1}^{3}
   \frac{m_i \, [\mathrm{cof}(\mathbf{F}_i)]_{de} + m_j \, [\mathrm{cof}(\mathbf{F}_j)]_{de}}
        {m_i + m_j}
