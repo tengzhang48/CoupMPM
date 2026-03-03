@@ -40,9 +40,7 @@ preserving the thermodynamic consistency of the material model.
 The local volume change of a material point is measured by the Jacobian of the
 deformation gradient:
 
-$$
-J_p = \det(\mathbf{F}_p).
-$$
+$$ J_p = \det(\mathbf{F}_p). $$
 
 For an initially unit-volume reference configuration, $J_p$ equals the ratio of
 current volume to reference volume. The following thresholds govern adaptivity:
@@ -87,24 +85,14 @@ A parent particle $p$ at position $\mathbf{x}_p$ is replaced by
 $n_{\text{child}} = 2^{n_{\text{dim}}}$ children
 ($n_{\text{child}} = 4$ in 2D, $8$ in 3D). Each child $c$ is placed at
 
-$$
-\mathbf{x}_c = \mathbf{x}_p + \boldsymbol{\epsilon}_c \, \delta,
-$$
+$$ \mathbf{x}_c = \mathbf{x}_p + \boldsymbol{\epsilon}_c \, \delta, $$
 
 where
 $\boldsymbol{\epsilon}_c \in \lbrace -1, +1 \rbrace^{n_{\text{dim}}}$
 is a sign vector that selects one corner of a hypercube, and $\delta$ is a scalar
 offset chosen from the current particle spacing:
 
-$$
-\delta = \frac{1}{4} s_p,
-\qquad
-s_p =
-\begin{cases}
-\left( V_p^0 \left| J_p \right| \right)^{1/3} & \text{3D}, \\[6pt]
-\left( V_p^0 \left| J_p \right| \right)^{1/2} & \text{2D},
-\end{cases}
-$$
+$$ \delta = \frac{1}{4} s_p, \qquad s_p = \begin{cases} \left( V_p^0 \left| J_p \right| \right)^{1/3} & \text{3D}, \\[6pt] \left( V_p^0 \left| J_p \right| \right)^{1/2} & \text{2D}, \end{cases} $$
 
 where $V_p^0$ is the reference volume of the parent. Placing children at
 $\pm \delta = \pm s_p / 4$ ensures they remain within the parent's support and do
@@ -112,12 +100,7 @@ not overlap with neighbours.
 
 The complete set of 3D child positions ($\boldsymbol{\epsilon}_c$ patterns) is:
 
-$$
-\boldsymbol{\epsilon}_c \in \left\lbrace
-(-1,-1,-1),\; (+1,-1,-1),\; (-1,+1,-1),\; (+1,+1,-1),\;
-(-1,-1,+1),\; (+1,-1,+1),\; (-1,+1,+1),\; (+1,+1,+1)
-\right\rbrace.
-$$
+$$ \boldsymbol{\epsilon}_c \in \left\lbrace (-1,-1,-1),\; (+1,-1,-1),\; (-1,+1,-1),\; (+1,+1,-1),\; (-1,-1,+1),\; (+1,-1,+1),\; (-1,+1,+1),\; (+1,+1,+1) \right\rbrace. $$
 
 ### 3.2 Conservation During Splitting
 
@@ -125,71 +108,31 @@ Let the parent have mass $m_p$, reference volume $V_p^0$, velocity $\mathbf{v}_p
 deformation gradient $\mathbf{F}_p$, and Cauchy stress $\boldsymbol{\sigma}_p$.
 Each child $c$ receives
 
-$$
-m_c = \frac{m_p}{n_{\text{child}}},
-\quad
-V_c^0 = \frac{V_p^0}{n_{\text{child}}},
-\quad
-\mathbf{v}_c = \mathbf{v}_p,
-\quad
-\mathbf{F}_c = \mathbf{F}_p,
-\quad
-\boldsymbol{\sigma}_c = \boldsymbol{\sigma}_p.
-$$
+$$ m_c = \frac{m_p}{n_{\text{child}}}, \quad V_c^0 = \frac{V_p^0}{n_{\text{child}}}, \quad \mathbf{v}_c = \mathbf{v}_p, \quad \mathbf{F}_c = \mathbf{F}_p, \quad \boldsymbol{\sigma}_c = \boldsymbol{\sigma}_p. $$
 
 **Mass conservation** is exact by construction:
 
-$$
-\sum_{c=1}^{n_{\text{child}}} m_c
-= n_{\text{child}} \cdot \frac{m_p}{n_{\text{child}}}
-= m_p.
-\tag{1}
-$$
+$$ \sum_{c=1}^{n_{\text{child}}} m_c = n_{\text{child}} \cdot \frac{m_p}{n_{\text{child}}} = m_p. \tag{1} $$
 
 **Reference volume conservation** is exact:
 
-$$
-\sum_{c=1}^{n_{\text{child}}} V_c^0
-= n_{\text{child}} \cdot \frac{V_p^0}{n_{\text{child}}}
-= V_p^0.
-\tag{2}
-$$
+$$ \sum_{c=1}^{n_{\text{child}}} V_c^0 = n_{\text{child}} \cdot \frac{V_p^0}{n_{\text{child}}} = V_p^0. \tag{2} $$
 
 **Linear momentum conservation** is exact. Since all children share the parent
 velocity $\mathbf{v}_p$,
 
-$$
-\sum_{c=1}^{n_{\text{child}}} m_c \, \mathbf{v}_c
-= \left( \sum_{c=1}^{n_{\text{child}}} m_c \right) \mathbf{v}_p
-= m_p \, \mathbf{v}_p.
-\tag{3}
-$$
+$$ \sum_{c=1}^{n_{\text{child}}} m_c \, \mathbf{v}_c = \left( \sum_{c=1}^{n_{\text{child}}} m_c \right) \mathbf{v}_p = m_p \, \mathbf{v}_p. \tag{3} $$
 
 **Angular momentum conservation** is approximate. The angular momentum contribution
 of the parent about the origin is
 $\mathbf{L}_p = m_p \, \mathbf{x}_p \times \mathbf{v}_p$.
 The angular momentum of the child system is
 
-$$
-\mathbf{L}_{\text{children}}
-= \sum_{c=1}^{n_{\text{child}}} m_c \, \mathbf{x}_c \times \mathbf{v}_c
-= \sum_{c=1}^{n_{\text{child}}} m_c
-  \left( \mathbf{x}_p + \boldsymbol{\epsilon}_c \delta \right)
-  \times \mathbf{v}_p.
-$$
+$$ \mathbf{L}_{\text{children}} = \sum_{c=1}^{n_{\text{child}}} m_c \, \mathbf{x}_c \times \mathbf{v}_c = \sum_{c=1}^{n_{\text{child}}} m_c \left( \mathbf{x}_p + \boldsymbol{\epsilon}_c \delta \right) \times \mathbf{v}_p. $$
 
 Expanding:
 
-$$
-\mathbf{L}_{\text{children}}
-= m_p \, \mathbf{x}_p \times \mathbf{v}_p
-+ \delta
-  \underbrace{
-    \left( \sum_{c=1}^{n_{\text{child}}} m_c \, \boldsymbol{\epsilon}_c \right)
-  }_{= \, \mathbf{0}}
-  \times \mathbf{v}_p.
-\tag{4}
-$$
+$$ \mathbf{L}_{\text{children}} = m_p \, \mathbf{x}_p \times \mathbf{v}_p + \delta \underbrace{ \left( \sum_{c=1}^{n_{\text{child}}} m_c \, \boldsymbol{\epsilon}_c \right) }_{= \, \mathbf{0}} \times \mathbf{v}_p. \tag{4} $$
 
 The residual sum vanishes because the sign vectors $\boldsymbol{\epsilon}_c$ are
 arranged symmetrically: for every child at $+\delta$ in each direction there is a
@@ -197,12 +140,7 @@ partner at $-\delta$, so
 $\sum_c \boldsymbol{\epsilon}_c = \mathbf{0}$.
 Therefore
 
-$$
-\mathbf{L}_{\text{children}}
-= m_p \, \mathbf{x}_p \times \mathbf{v}_p
-= \mathbf{L}_p.
-\tag{5}
-$$
+$$ \mathbf{L}_{\text{children}} = m_p \, \mathbf{x}_p \times \mathbf{v}_p = \mathbf{L}_p. \tag{5} $$
 
 Angular momentum is thus conserved **exactly** for any finite $\delta$, because the
 symmetric placement of the children ensures that the first moment of their position
@@ -219,16 +157,7 @@ physical event.
 
 Formally, for every child $c$:
 
-$$
-\mathbf{F}_c = \mathbf{F}_p,
-\qquad
-\boldsymbol{\sigma}_c = \boldsymbol{\sigma}_p,
-\qquad
-\mathbf{C}_c = \mathbf{C}_p,
-\qquad
-\boldsymbol{s}_c = \boldsymbol{s}_p,
-\tag{6}
-$$
+$$ \mathbf{F}_c = \mathbf{F}_p, \qquad \boldsymbol{\sigma}_c = \boldsymbol{\sigma}_p, \qquad \mathbf{C}_c = \mathbf{C}_p, \qquad \boldsymbol{s}_c = \boldsymbol{s}_p, \tag{6} $$
 
 where $\mathbf{C}_p$ is the APIC affine matrix and $\boldsymbol{s}_p$ denotes any
 internal-state variables. No constitutive model evaluation is required at the moment
@@ -265,41 +194,23 @@ the merged particle $m$ receives the following properties.
 
 **Mass** (conserved exactly):
 
-$$
-m_m = m_i + m_j.
-\tag{7}
-$$
+$$ m_m = m_i + m_j. \tag{7} $$
 
 **Reference volume** (conserved exactly):
 
-$$
-V_m^0 = V_i^0 + V_j^0.
-\tag{8}
-$$
+$$ V_m^0 = V_i^0 + V_j^0. \tag{8} $$
 
 **Position** (mass-weighted centroid):
 
-$$
-\mathbf{x}_m
-= \frac{m_i \, \mathbf{x}_i + m_j \, \mathbf{x}_j}{m_i + m_j}.
-\tag{9}
-$$
+$$ \mathbf{x}_m = \frac{m_i \, \mathbf{x}_i + m_j \, \mathbf{x}_j}{m_i + m_j}. \tag{9} $$
 
 **Velocity** (mass-weighted average, ensures linear momentum conservation):
 
-$$
-\mathbf{v}_m
-= \frac{m_i \, \mathbf{v}_i + m_j \, \mathbf{v}_j}{m_i + m_j}.
-\tag{10}
-$$
+$$ \mathbf{v}_m = \frac{m_i \, \mathbf{v}_i + m_j \, \mathbf{v}_j}{m_i + m_j}. \tag{10} $$
 
 **APIC affine matrix** (mass-weighted average):
 
-$$
-\mathbf{C}_m
-= \frac{m_i \, \mathbf{C}_i + m_j \, \mathbf{C}_j}{m_i + m_j}.
-\tag{11}
-$$
+$$ \mathbf{C}_m = \frac{m_i \, \mathbf{C}_i + m_j \, \mathbf{C}_j}{m_i + m_j}. \tag{11} $$
 
 ### 4.3 Deformation Gradient and Stress During Merging
 
@@ -313,20 +224,7 @@ consistency by combining two different constitutive states.
 CoupMPM uses the **heavier-particle rule**: the deformation gradient and stress of the
 heavier particle are assigned to the merged particle without modification:
 
-$$
-\mathbf{F}_m =
-\begin{cases}
-\mathbf{F}_i & \text{if } m_i \ge m_j, \\[4pt]
-\mathbf{F}_j & \text{otherwise,}
-\end{cases}
-\qquad
-\boldsymbol{\sigma}_m =
-\begin{cases}
-\boldsymbol{\sigma}_i & \text{if } m_i \ge m_j, \\[4pt]
-\boldsymbol{\sigma}_j & \text{otherwise.}
-\end{cases}
-\tag{12}
-$$
+$$ \mathbf{F}_m = \begin{cases} \mathbf{F}_i & \text{if } m_i \ge m_j, \\[4pt] \mathbf{F}_j & \text{otherwise,} \end{cases} \qquad \boldsymbol{\sigma}_m = \begin{cases} \boldsymbol{\sigma}_i & \text{if } m_i \ge m_j, \\[4pt] \boldsymbol{\sigma}_j & \text{otherwise.} \end{cases} \tag{12} $$
 
 Similarly, internal-state variables (plastic strain, damage, etc.) are taken from the
 heavier particle.
@@ -357,43 +255,21 @@ std::memcpy(merged.stress_v, s_keep, 6 * sizeof(double));
 
 **Linear momentum**: from Eq. (10),
 
-$$
-m_m \, \mathbf{v}_m
-= (m_i + m_j) \cdot \frac{m_i \mathbf{v}_i + m_j \mathbf{v}_j}{m_i + m_j}
-= m_i \, \mathbf{v}_i + m_j \, \mathbf{v}_j.
-\tag{13}
-$$
+$$ m_m \, \mathbf{v}_m = (m_i + m_j) \cdot \frac{m_i \mathbf{v}_i + m_j \mathbf{v}_j}{m_i + m_j} = m_i \, \mathbf{v}_i + m_j \, \mathbf{v}_j. \tag{13} $$
 
 Linear momentum is therefore conserved exactly.
 
 **Angular momentum**: the merged angular momentum about the origin is
 
-$$
-\mathbf{L}_m = m_m \, \mathbf{x}_m \times \mathbf{v}_m.
-\tag{14}
-$$
+$$ \mathbf{L}_m = m_m \, \mathbf{x}_m \times \mathbf{v}_m. \tag{14} $$
 
 Substituting Eqs. (9) and (10):
 
-$$
-\mathbf{L}_m
-= \frac{m_i \mathbf{x}_i + m_j \mathbf{x}_j}{m_i + m_j}
-  \times
-  \left( m_i \mathbf{v}_i + m_j \mathbf{v}_j \right).
-\tag{15}
-$$
+$$ \mathbf{L}_m = \frac{m_i \mathbf{x}_i + m_j \mathbf{x}_j}{m_i + m_j} \times \left( m_i \mathbf{v}_i + m_j \mathbf{v}_j \right). \tag{15} $$
 
 Expanding and grouping terms:
 
-$$
-\mathbf{L}_m
-= m_i \, \mathbf{x}_i \times \mathbf{v}_i
-+ m_j \, \mathbf{x}_j \times \mathbf{v}_j
-- \frac{m_i m_j}{m_i + m_j}
-  \left( \mathbf{x}_i - \mathbf{x}_j \right) \times
-  \left( \mathbf{v}_i - \mathbf{v}_j \right).
-\tag{16}
-$$
+$$ \mathbf{L}_m = m_i \, \mathbf{x}_i \times \mathbf{v}_i + m_j \, \mathbf{x}_j \times \mathbf{v}_j - \frac{m_i m_j}{m_i + m_j} \left( \mathbf{x}_i - \mathbf{x}_j \right) \times \left( \mathbf{v}_i - \mathbf{v}_j \right). \tag{16} $$
 
 The residual (last term) vanishes exactly when either the two particles are co-located
 ($\mathbf{x}_i = \mathbf{x}_j$)
