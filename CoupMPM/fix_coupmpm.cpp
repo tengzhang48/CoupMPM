@@ -260,13 +260,14 @@ void FixCoupMPM::init()
     error->all(FLERR, "fix coupmpm: no atoms defined");
 
   // Register pack/unpack_exchange hooks for cohesive bond migration
-  if (cohesive.enabled) atom->add_callback(0);
-
-  // Request a half neighbor list for cohesive zone bond detection
-  int irequest = neighbor->request(this, instance_me);
-  neighbor->requests[irequest]->pair = 0;
-  neighbor->requests[irequest]->fix = 1;
-  neighbor->requests[irequest]->half = 1;
+  // and request a half neighbor list for cohesive zone bond detection
+  if (cohesive.enabled) {
+    atom->add_callback(0);
+    int irequest = neighbor->request(this, instance_me);
+    neighbor->requests[irequest]->pair = 0;
+    neighbor->requests[irequest]->fix = 1;
+    neighbor->requests[irequest]->half = 1;
+  }
 }
 
 /* ---------------------------------------------------------------------- */
