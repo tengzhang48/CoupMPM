@@ -57,15 +57,19 @@ void FixCoupMPMOutput::parse_args(int narg, char **arg)
   int iarg = 3;
   while (iarg < narg) {
     if (strcmp(arg[iarg], "vtk_interval") == 0) {
+      if (iarg + 1 >= narg) error->all(FLERR, "fix coupmpm/output: vtk_interval needs argument");
       vtk_interval = atoi(arg[iarg+1]); iarg += 2;
     }
     else if (strcmp(arg[iarg], "vtk_prefix") == 0) {
+      if (iarg + 1 >= narg) error->all(FLERR, "fix coupmpm/output: vtk_prefix needs argument");
       vtk_prefix = arg[iarg+1]; iarg += 2;
     }
     else if (strcmp(arg[iarg], "surface_interval") == 0) {
+      if (iarg + 1 >= narg) error->all(FLERR, "fix coupmpm/output: surface_interval needs argument");
       surface_interval = atoi(arg[iarg+1]); iarg += 2;
     }
     else if (strcmp(arg[iarg], "surface_alpha") == 0) {
+      if (iarg + 1 >= narg) error->all(FLERR, "fix coupmpm/output: surface_alpha needs argument");
       surface_alpha = atof(arg[iarg+1]); iarg += 2;
     }
     else {

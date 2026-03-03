@@ -113,6 +113,7 @@ void FixCoupMPM::parse_args(int narg, char **arg)
       iarg += 2;
     }
     else if (strcmp(arg[iarg], "constitutive") == 0) {
+      if (iarg + 1 >= narg) error->all(FLERR, "fix coupmpm: constitutive needs model type");
       if (strcmp(arg[iarg+1], "neohookean") == 0) {
         double mu = 0, kappa = 0;
         for (int k = iarg + 2; k < narg - 1; k++) {
