@@ -346,19 +346,13 @@ $$
   \times (m_i \mathbf{v}_i + m_j \mathbf{v}_j). \tag{15}
 $$
 
-Expanding:
+Expanding and grouping terms:
 
 $$
-\mathbf{L}_m
-= m_i \, \mathbf{x}_i \times \mathbf{v}_i
-+ m_j \, \mathbf{x}_j \times \mathbf{v}_j
-+ \frac{m_i m_j}{m_i + m_j}
-  \bigl[(\mathbf{x}_i - \mathbf{x}_j) \times \mathbf{v}_j
-        + \mathbf{x}_j \times (\mathbf{v}_i - \mathbf{v}_j)\bigr]. \tag{16}
+\mathbf{L}_m = m_i \, \mathbf{x}_i \times \mathbf{v}_i + m_j \, \mathbf{x}_j \times \mathbf{v}_j - \frac{m_i m_j}{m_i + m_j} (\mathbf{x}_i - \mathbf{x}_j) \times (\mathbf{v}_i - \mathbf{v}_j). \tag{16}
 $$
 
-The residual (last term) vanishes when either the two particles are co-located
-($\mathbf{x}_i = \mathbf{x}_j$) or co-moving ($\mathbf{v}_i = \mathbf{v}_j$).
+The residual (last term) vanishes exactly when either the two particles are co-located ($\mathbf{x}_i = \mathbf{x}_j$) or co-moving ($\mathbf{v}_i = \mathbf{v}_j$).
 For particles in the same compression zone — where $|\mathbf{x}_i - \mathbf{x}_j|
 \ll \Delta x$ and $|\mathbf{v}_i - \mathbf{v}_j| \ll \|\mathbf{v}\|$ — the angular
 momentum error is of order $\mathcal{O}(\Delta x \, \|\mathbf{v}\| \, m_i m_j / m_m)$,
