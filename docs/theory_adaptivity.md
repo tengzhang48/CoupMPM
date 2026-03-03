@@ -79,7 +79,7 @@ Default values: $d_{\text{split}} = 1.8$, $d_{\text{merge}} = 0.3$.
 
 ## 3. Particle Splitting
 
-## 3.1 Child Placement
+### 3.1 Child Placement
 
 A parent particle $p$ at position $\mathbf{x}_p$ is replaced by $n_{\text{child}} = 2^{n_{\text{dim}}}$ children ($n_{\text{child}} = 4$ in 2D, $8$ in 3D). Each child $c$ is placed at
 
@@ -101,10 +101,10 @@ where $V_p^0$ is the reference volume of the parent, and $J_p = \det(\mathbf{F}_
 The complete set of 3D child positions ($\boldsymbol{\epsilon}_c$ patterns) is:
 
 $$
-\boldsymbol{\epsilon}_c \in \{ 
-(-1,-1,-1), (+1,-1,-1), (-1,+1,-1), (+1,+1,-1), \\
-(-1,-1,+1), (+1,-1,+1), (-1,+1,+1), (+1,+1,+1) 
-\}
+\boldsymbol{\epsilon}_c \in \left\{ \begin{array}{l}
+(-1,-1,-1),\; (+1,-1,-1),\; (-1,+1,-1),\; (+1,+1,-1), \\[2pt]
+(-1,-1,+1),\; (+1,-1,+1),\; (-1,+1,+1),\; (+1,+1,+1)
+\end{array} \right\}
 $$
 
 ### 3.2 Conservation During Splitting
