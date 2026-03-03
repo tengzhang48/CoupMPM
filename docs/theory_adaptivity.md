@@ -81,30 +81,31 @@ Default values: $d_{\text{split}} = 1.8$, $d_{\text{merge}} = 0.3$.
 
 ### 3.1 Child Placement
 
-A parent particle $p$ at position $\mathbf{x}_p$ is replaced by $n_{\text{child}} = 2^{n_{\text{dim}}}$ children ($n_{\text{child}} = 4$ in 2D, $8$ in 3D). Each child $c$ is placed at
+A parent particle $p$ at position $\mathbf{x}_p$ is replaced by
+$n_{\text{child}} = 2^{n_{\text{dim}}}$ children
+($n_{\text{child}} = 4$ in 2D, $8$ in 3D). Each child $c$ is placed at
 
 $$
-\mathbf{x}_c = \mathbf{x}_p + \boldsymbol{\epsilon}_c \, \delta,
+\mathbf{x}_c = \mathbf{x}_p + \epsilon_c \, \delta,
 $$
 
-where $\boldsymbol{\epsilon}_c \in \{-1, +1\}^{n_{\text{dim}}}$ is a sign vector that selects one corner of a hypercube, and $\delta$ is a scalar offset chosen from the current particle spacing:
+where $\epsilon_c \in \lbrace -1, +1 \rbrace^{n_{\text{dim}}}$ is a sign vector
+that selects one corner of a hypercube, and $\delta$ is a scalar offset chosen
+from the current particle spacing:
 
 $$
-\delta = \frac{1}{4} s_p, \qquad s_p = \begin{cases} 
-\left( V_p^0 \, \left| J_p \right| \right)^{1/3} & \text{3D}, \\[4pt]
-\left( V_p^0 \, \left| J_p \right| \right)^{1/2} & \text{2D}
-\end{cases}
+\delta = \frac{1}{4} s_p, \qquad s_p = \begin{cases} (V_p^0 |J_p|)^{1/3} & \text{3D} \\ (V_p^0 |J_p|)^{1/2} & \text{2D} \end{cases}
 $$
 
-where $V_p^0$ is the reference volume of the parent, and $J_p = \det(\mathbf{F}_p)$ is the Jacobian. Placing children at $\pm \delta = \pm s_p / 4$ ensures they remain within the parent's support and do not overlap with neighbours.
+where $V_p^0$ is the reference volume of the parent, and
+$J_p = \det(\mathbf{F}_p)$ is the Jacobian. Placing children at
+$\pm \delta = \pm s_p / 4$ ensures they remain within the parent's support
+and do not overlap with neighbours.
 
-The complete set of 3D child positions ($\boldsymbol{\epsilon}_c$ patterns) is:
+The complete set of 3D child positions ($\epsilon_c$ patterns) is:
 
 $$
-\boldsymbol{\epsilon}_c \in \left\{ \begin{array}{l}
-(-1,-1,-1),\; (+1,-1,-1),\; (-1,+1,-1),\; (+1,+1,-1), \\[2pt]
-(-1,-1,+1),\; (+1,-1,+1),\; (-1,+1,+1),\; (+1,+1,+1)
-\end{array} \right\}
+\epsilon_c \in \lbrace (-1,-1,-1), (+1,-1,-1), (-1,+1,-1), (+1,+1,-1), (-1,-1,+1), (+1,-1,+1), (-1,+1,+1), (+1,+1,+1) \rbrace
 $$
 
 ### 3.2 Conservation During Splitting
