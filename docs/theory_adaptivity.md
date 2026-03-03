@@ -90,7 +90,7 @@ $$
 where $\boldsymbol{\epsilon}_c \in \{-1, +1\}^{n_{\text{dim}}}$ is a sign vector that selects one corner of a hypercube, and $\delta$ is a scalar offset chosen from the current particle spacing:
 
 $$
-\delta = \frac{1}{4} s_p, \qquad s_p = \begin{cases} \left( V_p^0 \left| J_p \right| \right)^{1/3} & \text{3D}, \\ \left( V_p^0 \left| J_p \right| \right)^{1/2} & \text{2D}, \end{cases}
+\delta = \frac{1}{4} s_p, \qquad s_p = \begin{cases} \left( V_p^0 \left| J_p \right| \right)^{1/3} & \text{3D}, \\ \left( V_p^0 \left| J_p \right| \right)^{1/2} & \text{2D} \end{cases}
 $$
 
 where $V_p^0$ is the reference volume of the parent. Placing children at $\pm \delta = \pm s_p / 4$ ensures they remain within the parent's support and do not overlap with neighbours.
@@ -98,7 +98,7 @@ where $V_p^0$ is the reference volume of the parent. Placing children at $\pm \d
 The complete set of 3D child positions ($\boldsymbol{\epsilon}_c$ patterns) is:
 
 $$
-\boldsymbol{\epsilon}_c \in \left\{ (-1,-1,-1),\; (+1,-1,-1),\; (-1,+1,-1),\; (+1,+1,-1),\; (-1,-1,+1),\; (+1,-1,+1),\; (-1,+1,+1),\; (+1,+1,+1) \right\}.
+\boldsymbol{\epsilon}_c \in \{ (-1,-1,-1), (+1,-1,-1), (-1,+1,-1), (+1,+1,-1), (-1,-1,+1), (+1,-1,+1), (-1,+1,+1), (+1,+1,+1) \}
 $$
 
 ### 3.2 Conservation During Splitting
