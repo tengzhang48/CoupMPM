@@ -49,6 +49,15 @@ FixCoupMPMCohesive::FixCoupMPMCohesive(LAMMPS *lmp, int narg, char **arg)
 
 /* ---------------------------------------------------------------------- */
 
+FixCoupMPMCohesive::~FixCoupMPMCohesive()
+{
+  // Unregister pack_exchange / unpack_exchange callbacks so that the atom
+  // machinery doesn't call a deleted fix after unfix.
+  atom->delete_callback(id, 0);
+}
+
+/* ---------------------------------------------------------------------- */
+
 int FixCoupMPMCohesive::setmask()
 {
   int mask = 0;
@@ -114,6 +123,12 @@ void FixCoupMPMCohesive::init()
       "fix coupmpm/cohesive: fix coupmpm must be defined before fix coupmpm/cohesive");
 
   parent->fix_cohesive = this;
+
+  // Register with atom exchange so that cohesive bonds migrate with their
+  // owner particles across processor boundaries.  Without this registration,
+  // pack_exchange / unpack_exchange are never called during Comm::exchange()
+  // and bonds are silently lost in parallel runs.
+  atom->add_callback(0);
 
   // Request a half neighbor list for bond detection
   int irequest = neighbor->request(this, instance_me);

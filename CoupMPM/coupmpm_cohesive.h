@@ -550,8 +550,16 @@ public:
       if (effective_ratio > 1.0) {
         // Beyond characteristic displacement: accumulate damage
         double dn_max_ratio = prm.delta_n_max / prm.delta_n;
-        bond.damage = std::min(1.0,
-            (effective_ratio - 1.0) / (dn_max_ratio - 1.0));
+        // Guard against misconfigured params where delta_n_max == delta_n
+        // (would give dn_max_ratio - 1.0 == 0 → division by zero).
+        // 1e-20 matches the J_safe / MASS_TOL convention used throughout
+        // this package for near-zero floating-point guards.
+        double denom = dn_max_ratio - 1.0;
+        if (std::fabs(denom) < 1e-20)
+          bond.damage = 1.0;
+        else
+          bond.damage = std::min(1.0,
+              (effective_ratio - 1.0) / denom);
       }
 
       if (bond.damage >= 1.0) failed = true;
@@ -573,18 +581,22 @@ public:
       }
     }
 
-    // Compact bond list only periodically to avoid O(N) cost every step.
-    // Inactive bonds accumulate until 100 have broken, then compact once.
-    if (n_broken_last > 100) {
+    // Compact bond list when the number of inactive (dead) bonds has grown
+    // large enough that the scan overhead outweighs the compaction cost.
+    // n_inactive is derived from the n_active count below, so no extra
+    // O(N) scan is needed.
+
+    // Count active
+    n_active = 0;
+    for (const auto& b : bonds) if (b.active) n_active++;
+
+    int n_inactive = static_cast<int>(bonds.size()) - n_active;
+    if (n_inactive > 100) {
       bonds.erase(
           std::remove_if(bonds.begin(), bonds.end(),
                          [](const CohesiveBond& b) { return !b.active; }),
           bonds.end());
     }
-
-    // Count active
-    n_active = 0;
-    for (const auto& b : bonds) if (b.active) n_active++;
   }
 
   // ============================================================
@@ -717,7 +729,7 @@ public:
     }
     return m;
   }
-  static constexpr int DOUBLES_PER_BOND = 25;
+  static constexpr int DOUBLES_PER_BOND = 21;
 
   // Unpack bonds from buffer. Returns number of doubles read.
   int unpack_bonds(const double* buf, int nbonds) {
