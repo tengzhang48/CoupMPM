@@ -22,6 +22,7 @@ FixStyle(coupmpm, FixCoupMPM);
 namespace LAMMPS_NS {
 
 class AtomVecMPM;  // forward declaration
+class NeighList;   // forward declaration
 
 class FixCoupMPM : public Fix {
 public:
@@ -30,6 +31,7 @@ public:
 
   int setmask() override;
   void init() override;
+  void init_list(int, class NeighList *) override;
   void setup(int) override;
   void initial_integrate(int) override;
   void final_integrate() override;
@@ -44,6 +46,7 @@ public:
 
 private:
   AtomVecMPM *avec;  // pointer to atom_vec for MPM field access
+  NeighList *list;   // LAMMPS neighbor list for cohesive bond detection
 
   CoupMPM::MPMGrid grid;
   CoupMPM::MPMKernel kernel;

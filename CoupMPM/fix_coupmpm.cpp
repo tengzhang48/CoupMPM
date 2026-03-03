@@ -29,6 +29,9 @@
 #include "memory.h"
 #include "error.h"
 #include "modify.h"
+#include "neighbor.h"
+#include "neigh_list.h"
+#include "neigh_request.h"
 #include <cstring>
 #include <cmath>
 #include <cstdio>
@@ -41,6 +44,7 @@ using namespace CoupMPM;
 FixCoupMPM::FixCoupMPM(LAMMPS *lmp, int narg, char **arg)
   : Fix(lmp, narg, arg),
     avec(nullptr),
+    list(nullptr),
     L_buffer(nullptr), div_v_buf(nullptr), mass_p(nullptr),
     grid_dx(0.1), grid_dy(0.1), grid_dz(0.1),
     dim(3), use_bbar(true), dt_auto(true), energy_check(false),
@@ -257,7 +261,17 @@ void FixCoupMPM::init()
 
   // Register pack/unpack_exchange hooks for cohesive bond migration
   if (cohesive.enabled) atom->add_callback(0);
+
+  // Request a half neighbor list for cohesive zone bond detection
+  int irequest = neighbor->request(this, instance_me);
+  neighbor->requests[irequest]->pair = 0;
+  neighbor->requests[irequest]->fix = 1;
+  neighbor->requests[irequest]->half = 1;
 }
+
+/* ---------------------------------------------------------------------- */
+
+void FixCoupMPM::init_list(int /*id*/, NeighList *ptr) { list = ptr; }
 
 /* ---------------------------------------------------------------------- */
 
@@ -818,7 +832,7 @@ void FixCoupMPM::end_of_step()
           atom->x, atom->tag, atom->type,
           atom->molecule, avec->surface,
           F_flat, avec->vol0,
-          step_count, dim, dx_min);
+          step_count, dim, dx_min, list);
 
       if (comm->me == 0 && screen && n_new > 0)
         fprintf(screen, "CoupMPM: step %ld, %d new cohesive bonds formed, "
