@@ -224,7 +224,7 @@ public:
       int nlocal, int dim,
       double** x,
       const double* F_def,
-      const int* molecule,
+      const tagint* molecule,
       double dx_min) const
   {
     std::vector<MergePair> pairs;
