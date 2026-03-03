@@ -112,16 +112,16 @@ $$ m_c = \frac{m_p}{n_{\text{child}}}, \quad V_c^0 = \frac{V_p^0}{n_{\text{child
 
 **Mass conservation** is exact by construction:
 
-$$ \sum_{c=1}^{n_{\text{child}}} m_c = n_{\text{child}} \cdot \frac{m_p}{n_{\text{child}}} = m_p. \tag{1} $$
+$$ \sum_{c=1}^{n_\mathrm{child}} m_c = n_\mathrm{child} \cdot \frac{m_p}{n_\mathrm{child}} = m_p. \qquad (1) $$
 
 **Reference volume conservation** is exact:
 
-$$ \sum_{c=1}^{n_{\text{child}}} V_c^0 = n_{\text{child}} \cdot \frac{V_p^0}{n_{\text{child}}} = V_p^0. \tag{2} $$
+$$ \sum_{c=1}^{n_\mathrm{child}} V_c^0 = n_\mathrm{child} \cdot \frac{V_p^0}{n_\mathrm{child}} = V_p^0. \qquad (2) $$
 
 **Linear momentum conservation** is exact. Since all children share the parent
 velocity $\mathbf{v}_p$,
 
-$$ \sum_{c=1}^{n_{\text{child}}} m_c \, \mathbf{v}_c = \left( \sum_{c=1}^{n_{\text{child}}} m_c \right) \mathbf{v}_p = m_p \, \mathbf{v}_p. \tag{3} $$
+$$ \sum_{c=1}^{n_\mathrm{child}} m_c \, \mathbf{v}_c = \left(\sum_{c=1}^{n_\mathrm{child}} m_c\right) \mathbf{v}_p = m_p \, \mathbf{v}_p. \qquad (3) $$
 
 **Angular momentum conservation** is approximate. The angular momentum contribution
 of the parent about the origin is
@@ -132,7 +132,7 @@ $$ \mathbf{L}_{\text{children}} = \sum_{c=1}^{n_{\text{child}}} m_c \, \mathbf{x
 
 Expanding:
 
-$$ \mathbf{L}_{\text{children}} = m_p \, \mathbf{x}_p \times \mathbf{v}_p + \delta \underbrace{ \left( \sum_{c=1}^{n_{\text{child}}} m_c \, \boldsymbol{\epsilon}_c \right) }_{= \, \mathbf{0}} \times \mathbf{v}_p. \tag{4} $$
+$$ \mathbf{L}_\mathrm{children} = m_p \, \mathbf{x}_p \times \mathbf{v}_p + \delta \underbrace{\left(\sum_{c=1}^{n_\mathrm{child}} m_c \, \boldsymbol{\epsilon}_c\right)}_{\displaystyle = \mathbf{0}} \times \mathbf{v}_p. \qquad (4) $$
 
 The residual sum vanishes because the sign vectors $\boldsymbol{\epsilon}_c$ are
 arranged symmetrically: for every child at $+\delta$ in each direction there is a
@@ -140,7 +140,7 @@ partner at $-\delta$, so
 $\sum_c \boldsymbol{\epsilon}_c = \mathbf{0}$.
 Therefore
 
-$$ \mathbf{L}_{\text{children}} = m_p \, \mathbf{x}_p \times \mathbf{v}_p = \mathbf{L}_p. \tag{5} $$
+$$ \mathbf{L}_\mathrm{children} = m_p \, \mathbf{x}_p \times \mathbf{v}_p = \mathbf{L}_p. \qquad (5) $$
 
 Angular momentum is thus conserved **exactly** for any finite $\delta$, because the
 symmetric placement of the children ensures that the first moment of their position
@@ -157,7 +157,7 @@ physical event.
 
 Formally, for every child $c$:
 
-$$ \mathbf{F}_c = \mathbf{F}_p, \qquad \boldsymbol{\sigma}_c = \boldsymbol{\sigma}_p, \qquad \mathbf{C}_c = \mathbf{C}_p, \qquad \boldsymbol{s}_c = \boldsymbol{s}_p, \tag{6} $$
+$$ \mathbf{F}_c = \mathbf{F}_p, \qquad \boldsymbol{\sigma}_c = \boldsymbol{\sigma}_p, \qquad \mathbf{C}_c = \mathbf{C}_p, \qquad \boldsymbol{s}_c = \boldsymbol{s}_p. \qquad (6) $$
 
 where $\mathbf{C}_p$ is the APIC affine matrix and $\boldsymbol{s}_p$ denotes any
 internal-state variables. No constitutive model evaluation is required at the moment
@@ -194,23 +194,23 @@ the merged particle $m$ receives the following properties.
 
 **Mass** (conserved exactly):
 
-$$ m_m = m_i + m_j. \tag{7} $$
+$$ m_m = m_i + m_j. \qquad (7) $$
 
 **Reference volume** (conserved exactly):
 
-$$ V_m^0 = V_i^0 + V_j^0. \tag{8} $$
+$$ V_m^0 = V_i^0 + V_j^0. \qquad (8) $$
 
 **Position** (mass-weighted centroid):
 
-$$ \mathbf{x}_m = \frac{m_i \, \mathbf{x}_i + m_j \, \mathbf{x}_j}{m_i + m_j}. \tag{9} $$
+$$ \mathbf{x}_m = \frac{m_i \, \mathbf{x}_i + m_j \, \mathbf{x}_j}{m_i + m_j}. \qquad (9) $$
 
 **Velocity** (mass-weighted average, ensures linear momentum conservation):
 
-$$ \mathbf{v}_m = \frac{m_i \, \mathbf{v}_i + m_j \, \mathbf{v}_j}{m_i + m_j}. \tag{10} $$
+$$ \mathbf{v}_m = \frac{m_i \, \mathbf{v}_i + m_j \, \mathbf{v}_j}{m_i + m_j}. \qquad (10) $$
 
 **APIC affine matrix** (mass-weighted average):
 
-$$ \mathbf{C}_m = \frac{m_i \, \mathbf{C}_i + m_j \, \mathbf{C}_j}{m_i + m_j}. \tag{11} $$
+$$ \mathbf{C}_m = \frac{m_i \, \mathbf{C}_i + m_j \, \mathbf{C}_j}{m_i + m_j}. \qquad (11) $$
 
 ### 4.3 Deformation Gradient and Stress During Merging
 
@@ -224,7 +224,7 @@ consistency by combining two different constitutive states.
 CoupMPM uses the **heavier-particle rule**: the deformation gradient and stress of the
 heavier particle are assigned to the merged particle without modification:
 
-$$ \mathbf{F}_m = \begin{cases} \mathbf{F}_i & \text{if } m_i \ge m_j, \\[4pt] \mathbf{F}_j & \text{otherwise,} \end{cases} \qquad \boldsymbol{\sigma}_m = \begin{cases} \boldsymbol{\sigma}_i & \text{if } m_i \ge m_j, \\[4pt] \boldsymbol{\sigma}_j & \text{otherwise.} \end{cases} \tag{12} $$
+$$ \mathbf{F}_m = \begin{cases} \mathbf{F}_i & \text{if } m_i \ge m_j \\ \mathbf{F}_j & \text{otherwise} \end{cases}, \qquad \boldsymbol{\sigma}_m = \begin{cases} \boldsymbol{\sigma}_i & \text{if } m_i \ge m_j \\ \boldsymbol{\sigma}_j & \text{otherwise} \end{cases}. \qquad (12) $$
 
 Similarly, internal-state variables (plastic strain, damage, etc.) are taken from the
 heavier particle.
@@ -255,17 +255,17 @@ std::memcpy(merged.stress_v, s_keep, 6 * sizeof(double));
 
 **Linear momentum**: from Eq. (10),
 
-$$ m_m \, \mathbf{v}_m = (m_i + m_j) \cdot \frac{m_i \mathbf{v}_i + m_j \mathbf{v}_j}{m_i + m_j} = m_i \, \mathbf{v}_i + m_j \, \mathbf{v}_j. \tag{13} $$
+$$ m_m \, \mathbf{v}_m = (m_i + m_j) \cdot \frac{m_i \mathbf{v}_i + m_j \mathbf{v}_j}{m_i + m_j} = m_i \, \mathbf{v}_i + m_j \, \mathbf{v}_j. \qquad (13) $$
 
 Linear momentum is therefore conserved exactly.
 
 **Angular momentum**: the merged angular momentum about the origin is
 
-$$ \mathbf{L}_m = m_m \, \mathbf{x}_m \times \mathbf{v}_m. \tag{14} $$
+$$ \mathbf{L}_m = m_m \, \mathbf{x}_m \times \mathbf{v}_m. \qquad (14) $$
 
 Substituting Eqs. (9) and (10):
 
-$$\mathbf{L}_m = \frac{m_i \mathbf{x}_i + m_j \mathbf{x}_j}{m_i + m_j} \times (m_i \mathbf{v}_i + m_j \mathbf{v}_j). \tag{15}$$
+$$ \mathbf{L}_m = \frac{m_i \mathbf{x}_i + m_j \mathbf{x}_j}{m_i + m_j} \times (m_i \mathbf{v}_i + m_j \mathbf{v}_j). \qquad (15) $$
 
 Expanding and grouping terms:
 
