@@ -198,6 +198,101 @@ fix mpm all coupmpm                         \
 
 ---
 
+## Known Limitations
+
+The following issues are known and deferred for future development:
+
+| Issue | Impact | Recommended Fix |
+|---|---|---|
+| Bardenhagen `NodeBodyData` not included in `reverse_comm` | Multi-rank contact misses ghost-node contributions; incorrect impulses near subdomain boundaries | Defer per-body velocity computation to owned nodes after `reverse_comm` |
+| `grad-rho` field not forward-communicated | Ghost nodes carry zero density gradient; particles near subdomain boundaries may be misclassified as interior | Add a `forward_comm` pass for `grad_rho_x/y/z` |
+| Per-type mass limits particle adaptivity | Split child particles revert to the full per-type mass from the LAMMPS type table, breaking mass conservation | Switch to per-atom `rmass` (`mass_type = 0`) for simulations with heavy splitting |
+| No reference-configuration cohesive zones | Cohesive adhesion is range-limited to within one grid cell | Implement the Crook–Homel reference-configuration method (Phase 2) |
+
+---
+
+## Implementation Status
+
+### Complete
+- **`atom_vec_mpm`**: Full MPI pack/unpack for exchange, border, restart, forward, and reverse communication (16 methods). Data file format: `atom-ID mol-ID atom-type x y z vol0`.
+- **`coupmpm_grid`**: SoA layout, variable ghost width, grid solve, B-bar normalization, per-body Bardenhagen node tracking.
+- **`coupmpm_kernel`**: Linear, quadratic B-spline, and cubic B-spline kernels with gradients and D_inv; support-range computation.
+- **`coupmpm_transfer`**: P2G (APIC, stress divergence, B-bar, per-body momentum, P2GRecord). G2P (velocity, affine matrix **B**_p, velocity gradient **L**, div_v). Anti-P2G migration protocol. MPI ghost exchange.
+- **`coupmpm_stress`**: Neo-Hookean with Jacobian clamping. Acoustic wave speed for CFL estimation.
+- **`coupmpm_contact`**: Bardenhagen multi-velocity algorithm with geometric contact normal, Coulomb friction, and area-scaled adhesion.
+- **`coupmpm_surface`**: Density-gradient surface detection with global `MPI_Allreduce` threshold. Nanson area scaling for adhesion.
+- **`coupmpm_adaptivity`**: Jacobian-based particle splitting and nearest-neighbour merging with LAMMPS atom-management integration.
+- **`coupmpm_cohesive`**: Dynamic Cohesive Zone module with three traction-separation laws and runtime bond formation/rupture.
+- **`coupmpm_io`**: Grid VTK, particle VTK, and PVD time-series output.
+- **`fix_coupmpm`**: Keyword parsing, grid/MPI setup, complete Verlet timestep loop, CFL control, VTK output, surface detection, adaptivity, and cohesive zone management.
+
+### Stubs and Future Work
+- Mooney-Rivlin constitutive model (stub only)
+- Generalized Maxwell viscoelastic model
+- AFLIP blended transfer scheme
+- Reference-configuration cohesive zones (Crook–Homel)
+- `pair_style mpm/penalty` for penalty contact
+- Reaction-diffusion chemistry coupling
+- Checkpoint/restart support
+
+---
+
+## Key Physics Notes
+
+1. **B-bar two-pass**: `raw_div_v` is mass-weighted during P2G. It must be normalized by the nodal mass **after** `reverse_comm`, not before.
+
+2. **APIC affine matrix**: `Bp` stores **C**_p. The APIC velocity contribution at a node is `v_p + C_p · (x_node − x_p)`. `D_inv` is applied during G2P, not during P2G.
+
+3. **Ghost exchange completeness**: The reverse communication must include all P2G accumulation fields: mass, momentum, `force_int`, `force_ext`, and `raw_div_v`.
+
+4. **Contact normal must be geometric**: Using Δv / |Δv| as the contact normal collapses the normal/tangential decomposition. The momentum-direction difference between bodies provides a kinematics-independent geometric normal.
+
+5. **Anti-P2G timing**: LAMMPS Verlet order is `initial_integrate` → forces → `final_integrate` → `comm::exchange`. Executing anti-P2G in `final_integrate` is correct because it runs before particle migration.
+
+6. **Adaptive-particle mass**: When adaptivity is enabled, particle mass is computed from `vol0 × rho0` rather than the per-type LAMMPS mass table to ensure conservation through split/merge cycles.
+
+7. **Surface detection threshold**: `rho_max` must be globally reduced via `MPI_Allreduce(MPI_MAX)` before computing the surface threshold; otherwise each rank applies a different cut-off.
+
+---
+
+## Design Correspondence with CoupLB
+
+CoupMPM shares architectural patterns with the companion CoupLB Lattice-Boltzmann package:
+
+| CoupLB | CoupMPM | Notes |
+|---|---|---|
+| Grid SoA with `f[Q * ntotal]` | `MPMGrid` SoA with mass / momentum / force arrays | Same ghost-inclusive linear indexing |
+| `Streaming::exchange_dim` | `MPMGhostExchange::reverse_dim` / `forward_dim` | Same six-face neighbour topology |
+| `IBM::spread` / `interpolate` | `p2g` / `g2p` (B-spline kernel loops) | Structurally identical loop patterns |
+| `IO::write_vtk` (MPI `Gatherv`) | `MPMIO::write_grid_vtk` | Nearly identical gather-and-write logic |
+| `exchange_forces` (reverse comm) | `reverse_comm` | Same ghost-to-owner accumulation protocol |
+
+---
+
+## Validation Roadmap
+
+### Phase 0 — Single-rank benchmarks
+1. Patch test: deformation gradient **F** remains identity under zero applied velocity.
+2. 1D elastic wave: wave speed = √((κ + 4μ/3) / ρ₀).
+3. Particle adaptivity conservation check: total mass and momentum invariant through split/merge cycles.
+
+### Phase 1 — Multi-rank benchmarks
+4. 1D wave on 4 MPI ranks: momentum drift < 10⁻¹⁰ after 1000 steps.
+5. Bardenhagen contact across MPI subdomain boundaries.
+6. Surface detection consistency: surface flags identical regardless of domain decomposition.
+
+### Phase 2 — Contact benchmarks
+7. Hertz contact: contact area *a*³ ∝ applied load *P*.
+8. JKR adhesion: pull-off force = (3/2)π γ R.
+9. Sliding block on inclined plane: friction coefficient recovery.
+
+### Phase 3 — Biological applications
+10. Cell sorting via differential adhesion (Steinberg model).
+11. Cytokinetic ring contraction during cell division.
+12. Coupled LBM-MPM simulation of a cell in shear flow.
+
+---
+
 ## References
 
 - Jiang, C., Schroeder, C., Selle, A., Teran, J., & Stomakhin, A. (2015). The affine particle-in-cell method. *ACM Transactions on Graphics*, 34(4), 51.
