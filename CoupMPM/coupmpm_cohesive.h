@@ -11,6 +11,7 @@
 #include <cstring>
 #include <algorithm>
 #include <cassert>
+#include <unordered_map>
 
 namespace LAMMPS_NS {
 namespace CoupMPM {
@@ -352,9 +353,9 @@ public:
   // tag: global tags (for finding particles)
   // F_def: deformation gradients (for normal update)
   // ============================================================
-  void compute_forces(int /*nlocal*/, int /*nghost*/,
+  void compute_forces(int nlocal, int nghost,
                       double** x, double** f,
-                      tagint* /*tag*/, double* F_def,
+                      tagint* tag, double* F_def,
                       int dim, double dt,
                       Atom *atom_ptr)
   {
@@ -362,12 +363,15 @@ public:
 
     n_active = 0;
 
+    // Build local tag-to-index map covering local + ghost atoms
+    std::unordered_map<tagint, int> tag2idx;
+    for (int p = 0; p < nlocal + nghost; p++) tag2idx[tag[p]] = p;
+
     for (auto& bond : bonds) {
       if (!bond.active) continue;
 
-      // O(1) tag lookup via LAMMPS atom map
-      int li = atom_ptr->map(bond.tag_i);
-      int lj = atom_ptr->map(bond.tag_j);
+      int li = tag2idx.count(bond.tag_i) ? tag2idx[bond.tag_i] : -1;
+      int lj = tag2idx.count(bond.tag_j) ? tag2idx[bond.tag_j] : -1;
 
       // If either particle is not visible on this rank, skip
       if (li < 0 || lj < 0) continue;
@@ -512,20 +516,24 @@ public:
   // ============================================================
   // Update damage and break failed bonds.
   // ============================================================
-  void update_damage_and_break(int /*nlocal*/, double** x, tagint* /*tag*/,
+  void update_damage_and_break(int nlocal, double** x, tagint* tag,
                                int dim, Atom *atom_ptr)
   {
     if (!enabled) return;
     n_broken_last = 0;
+
+    // Build local tag-to-index map covering local + ghost atoms
+    int nghost = atom_ptr->nghost;
+    std::unordered_map<tagint, int> tag2idx;
+    for (int p = 0; p < nlocal + nghost; p++) tag2idx[tag[p]] = p;
 
     for (auto& bond : bonds) {
       if (!bond.active) continue;
 
       const CZParams& prm = get_params(bond.type_i, bond.type_j);
 
-      // O(1) tag lookup via LAMMPS atom map
-      int li = atom_ptr->map(bond.tag_i);
-      int lj = atom_ptr->map(bond.tag_j);
+      int li = tag2idx.count(bond.tag_i) ? tag2idx[bond.tag_i] : -1;
+      int lj = tag2idx.count(bond.tag_j) ? tag2idx[bond.tag_j] : -1;
 
       // Check failure criteria
       bool failed = false;

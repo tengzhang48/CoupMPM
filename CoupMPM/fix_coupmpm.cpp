@@ -71,7 +71,6 @@ FixCoupMPM::FixCoupMPM(LAMMPS *lmp, int narg, char **arg)
 
 FixCoupMPM::~FixCoupMPM()
 {
-  if (cohesive.enabled) atom->delete_callback(id, 0);
   memory->destroy(L_buffer);
   memory->destroy(div_v_buf);
   memory->destroy(mass_p);
@@ -259,10 +258,8 @@ void FixCoupMPM::init()
   if (atom->natoms == 0)
     error->all(FLERR, "fix coupmpm: no atoms defined");
 
-  // Register pack/unpack_exchange hooks for cohesive bond migration
-  // and request a half neighbor list for cohesive zone bond detection
+  // Request a half neighbor list for cohesive zone bond detection
   if (cohesive.enabled) {
-    atom->add_callback(0);
     int irequest = neighbor->request(this, instance_me);
     neighbor->requests[irequest]->pair = 0;
     neighbor->requests[irequest]->fix = 1;
@@ -488,7 +485,7 @@ void FixCoupMPM::initial_integrate(int /*vflag*/)
   grid.grid_solve(dt);
 
   if (contact_model)
-    contact_model->post_grid_solve(grid, dt);
+    contact_model->post_grid_solve(grid, dt, world);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -551,25 +548,13 @@ void FixCoupMPM::final_integrate()
   // include this particle in its next P2G step normally.
   {
     int n_migrated = 0;
-    const double lo[3] = {domain->sublo[0], domain->sublo[1], domain->sublo[2]};
-    const double hi[3] = {domain->subhi[0], domain->subhi[1], domain->subhi[2]};
 
     for (int i = 0; i < nlocal; i++) {
       bool outside = false;
       for (int d = 0; d < dim; d++) {
-        if (x[i][d] < lo[d] || x[i][d] >= hi[d]) {
-          // Periodic: only flag if not wrapped
-          if (!domain->periodicity[d] ||
-              (x[i][d] < domain->boxlo[d] || x[i][d] >= domain->boxhi[d])) {
-            outside = true;
-            break;
-          }
-          // Even with periodicity, if nprocs > 1 and particle left
-          // subdomain, it needs migration
-          if (comm->procgrid[d] > 1) {
-            outside = true;
-            break;
-          }
+        if (x[i][d] < domain->sublo[d] || x[i][d] >= domain->subhi[d]) {
+          outside = true;
+          break;
         }
       }
       if (outside && i < (int)p2g_records.size()) {

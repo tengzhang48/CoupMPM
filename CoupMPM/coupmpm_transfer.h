@@ -33,7 +33,7 @@ namespace Tags {
 struct P2GRecord {
   int local_idx;     // local atom index at P2G time
   int global_tag;    // global atom tag (robust against atom sorting)
-  int body_id;       // molecule ID (for Bardenhagen)
+  tagint body_id;       // molecule ID (for Bardenhagen)
   double xp[3];      // position at P2G time
   double vp[3];      // velocity
   double fp[3];      // force (pair + fix)
@@ -213,8 +213,10 @@ public:
       if (fs > mf) mf = fs;
     }
     // Buffer for the larger of reverse and forward
-    int max_fields = (N_REVERSE_FIELDS > N_FORWARD_FIELDS)
-                     ? N_REVERSE_FIELDS : N_FORWARD_FIELDS;
+    int n_rev = N_REVERSE_FIELDS;
+    if (grid.contact_bardenhagen) n_rev += MAX_BODIES_PER_NODE * 5;
+    int max_fields = (n_rev > N_FORWARD_FIELDS)
+                     ? n_rev : N_FORWARD_FIELDS;
     max_buf = static_cast<size_t>(max_fields) * mf;
     send_lo.resize(max_buf);
     send_hi.resize(max_buf);
@@ -271,7 +273,9 @@ private:
 
     if (neigh[d][0] == MPI_PROC_NULL && neigh[d][1] == MPI_PROC_NULL) return;
 
-    const size_t bs = static_cast<size_t>(N_REVERSE_FIELDS) * ghost_face_size(g, d);
+    int n_rev = N_REVERSE_FIELDS;
+    if (g.contact_bardenhagen) n_rev += MAX_BODIES_PER_NODE * 5;
+    const size_t bs = static_cast<size_t>(n_rev) * ghost_face_size(g, d);
     if (!bs) return;
     assert(bs <= max_buf);
     const int c = static_cast<int>(bs);
@@ -351,6 +355,27 @@ private:
       buf[c++] = g.force_ext_y[n];
       buf[c++] = g.force_ext_z[n];
       buf[c++] = g.raw_div_v[n];
+
+      if (g.contact_bardenhagen) {
+        union ubuf { double d; tagint t; };
+        const int base = n * MAX_BODIES_PER_NODE;
+        for (int b = 0; b < MAX_BODIES_PER_NODE; b++) {
+          if (b < g.num_bodies[n]) {
+            const NodeBodyData& bd = g.body_data[base + b];
+            ubuf u; u.t = bd.body_id; buf[c++] = u.d;
+            buf[c++] = bd.mass;
+            buf[c++] = bd.momentum[0];
+            buf[c++] = bd.momentum[1];
+            buf[c++] = bd.momentum[2];
+          } else {
+            ubuf u; u.t = -1; buf[c++] = u.d;
+            buf[c++] = 0.0;
+            buf[c++] = 0.0;
+            buf[c++] = 0.0;
+            buf[c++] = 0.0;
+          }
+        }
+      }
     });
   }
 
@@ -370,6 +395,46 @@ private:
       g.force_ext_y[n] += buf[c++];
       g.force_ext_z[n] += buf[c++];
       g.raw_div_v[n]   += buf[c++];
+
+      if (g.contact_bardenhagen) {
+        union ubuf { double d; tagint t; };
+        const int base = n * MAX_BODIES_PER_NODE;
+        for (int b = 0; b < MAX_BODIES_PER_NODE; b++) {
+          ubuf u; u.d = buf[c++]; tagint incoming_id = u.t;
+          if (incoming_id == -1) {
+            c += 4;
+            continue;
+          }
+          double in_mass = buf[c++];
+          double in_mom[3];
+          in_mom[0] = buf[c++];
+          in_mom[1] = buf[c++];
+          in_mom[2] = buf[c++];
+
+          // Match incoming body to existing local body entries
+          bool found = false;
+          for (int k = 0; k < g.num_bodies[n]; k++) {
+            if (g.body_data[base + k].body_id == incoming_id) {
+              g.body_data[base + k].mass += in_mass;
+              g.body_data[base + k].momentum[0] += in_mom[0];
+              g.body_data[base + k].momentum[1] += in_mom[1];
+              g.body_data[base + k].momentum[2] += in_mom[2];
+              found = true;
+              break;
+            }
+          }
+          if (!found && g.num_bodies[n] < MAX_BODIES_PER_NODE) {
+            int nb = g.num_bodies[n];
+            g.body_data[base + nb].zero();
+            g.body_data[base + nb].body_id = incoming_id;
+            g.body_data[base + nb].mass = in_mass;
+            g.body_data[base + nb].momentum[0] = in_mom[0];
+            g.body_data[base + nb].momentum[1] = in_mom[1];
+            g.body_data[base + nb].momentum[2] = in_mom[2];
+            g.num_bodies[n]++;
+          }
+        }
+      }
     });
   }
 

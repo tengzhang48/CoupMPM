@@ -122,7 +122,7 @@ public:
     const double dx_d[3] = {grid.dx, grid.dy, grid.dz};
 
     // Find ρ_max across the grid for threshold computation
-    double rho_max = 0.0;
+    double local_rho_max = 0.0;
     const int gh = grid.ghost;
     const int klo = (grid.dim == 3) ? gh : 0;
     const int khi = (grid.dim == 3) ? (grid.gz - gh - 1) : 0;
@@ -131,7 +131,7 @@ public:
       for (int j = gh; j <= grid.gy - gh - 1; j++)
         for (int i = gh; i <= grid.gx - gh - 1; i++) {
           double rho_n = grid.density[grid.idx(i, j, k)];
-          if (rho_n > rho_max) rho_max = rho_n;
+          if (rho_n > local_rho_max) local_rho_max = rho_n;
         }
 
     // Threshold: |∇ρ| > α * ρ_max / dx_min
@@ -139,16 +139,14 @@ public:
                           (grid.dim == 3) ? grid.dz : grid.dy));
 
     // Global rho_max across all ranks for consistent threshold
-    double rho_max_global = rho_max;
-    if (comm_world != MPI_COMM_NULL) {
-      MPI_Allreduce(&rho_max, &rho_max_global, 1, MPI_DOUBLE,
-                    MPI_MAX, comm_world);
-    }
+    double global_rho_max = 0.0;
+    MPI_Allreduce(&local_rho_max, &global_rho_max, 1, MPI_DOUBLE,
+                  MPI_MAX, comm_world);
 
-    const double threshold = alpha * rho_max_global / dx_min;
+    const double threshold = alpha * global_rho_max / dx_min;
 
     // Skip if everything is zero (no mass on grid)
-    if (rho_max_global < MASS_TOL) {
+    if (global_rho_max < MASS_TOL) {
       for (int p = 0; p < nlocal; p++) surface_flag[p] = 0;
       return;
     }

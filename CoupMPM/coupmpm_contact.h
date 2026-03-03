@@ -2,6 +2,7 @@
 #define COUPMPM_CONTACT_H
 
 #include "coupmpm_grid.h"
+#include <mpi.h>
 #include <cmath>
 #include <cstring>
 
@@ -24,7 +25,7 @@ public:
   }
 
   // Called after grid solve to apply contact forces
-  virtual void post_grid_solve(MPMGrid& grid, double dt) = 0;
+  virtual void post_grid_solve(MPMGrid& grid, double dt, MPI_Comm world) = 0;
 
   // Maximum contact stiffness for CFL estimation
   virtual double max_contact_stiffness() const { return 0.0; }
@@ -38,7 +39,7 @@ public:
 class ContactNone : public MPMContact {
 public:
   void init(int, char**) override {}
-  void post_grid_solve(MPMGrid&, double) override {}
+  void post_grid_solve(MPMGrid&, double, MPI_Comm) override {}
   const char* name() const override { return "none"; }
 };
 
@@ -76,8 +77,14 @@ public:
                 grid.ntotal * sizeof(int));
   }
 
-  void post_grid_solve(MPMGrid& grid, double dt) override {
+  void sync_body_data_mpi(MPMGrid& grid, MPI_Comm world) {
+    // TODO: Implement custom MPI_Reduce for grid.body_data across ghost boundaries
+  }
+
+  void post_grid_solve(MPMGrid& grid, double dt, MPI_Comm world) override {
     if (!grid.contact_bardenhagen) return;
+
+    sync_body_data_mpi(grid, world);
 
     const int klo = (grid.dim == 3) ? grid.ghost : 0;
     const int khi = (grid.dim == 3) ? (grid.gz - grid.ghost - 1) : 0;
@@ -256,7 +263,7 @@ class ContactPenalty : public MPMContact {
 public:
   void init(int, char**) override {}
 
-  void post_grid_solve(MPMGrid&, double) override {
+  void post_grid_solve(MPMGrid&, double, MPI_Comm) override {
     // Nothing to do at grid level — pair forces already spread via P2G
   }
 
