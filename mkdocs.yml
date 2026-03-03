@@ -16,9 +16,14 @@ extra_javascript:
 
 nav:
   - Home: index.md
+  - User Guide:
+    - Keywords & Syntax: keywords.md
   - Theory Manual:
     - Core MPM & APIC: theory_apic_transfer.md
     - B-bar Anti-Locking: theory_bbar_locking.md
     - Multi-Body Contact: theory_bardenhagen_contact.md
     - Dynamic Cohesive Zones: theory_dynamic_cohesive.md
     - Particle Adaptivity: theory_adaptivity.md
+  - Developer:
+    - Architecture: architecture.md
+    - Implementation Status: status.md
