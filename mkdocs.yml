@@ -1,4 +1,5 @@
 site_name: CoupMPM Documentation
+site_url: https://tengzhang48.github.io/CoupMPM/
 
 theme:
   name: material
