@@ -20,6 +20,7 @@
 #include "atom_vec_mpm.h"
 #include "coupmpm_surface.h"
 #include "coupmpm_adaptivity.h"
+#include "coupmpm_cohesive.h"
 #include "atom.h"
 #include "update.h"
 #include "domain.h"
@@ -46,6 +47,8 @@ FixCoupMPM::FixCoupMPM(LAMMPS *lmp, int narg, char **arg)
     vtk_interval(0), surface_interval(10),
     vtk_prefix("coupmpm"), cfl_factor(0.3), rho0(1000.0),
     surface_alpha(0.1),
+    cz_sigma_tmp(100.0), cz_delta_tmp(1e-4),
+    cz_delta_max_tmp(2e-4), cz_form_dist_tmp(5e-4),
     Nx_global(0), Ny_global(0), Nz_global(0),
     step_count(0), nmax_alloc(0)
 {
@@ -198,6 +201,35 @@ void FixCoupMPM::parse_args(int narg, char **arg)
       adaptivity.check_interval = atoi(arg[iarg+1]);
       iarg += 2;
     }
+    else if (strcmp(arg[iarg], "cohesive") == 0) {
+      if (strcmp(arg[iarg+1], "yes") == 0) cohesive.enabled = true;
+      else cohesive.enabled = false;
+      iarg += 2;
+    }
+    else if (strcmp(arg[iarg], "cz_law") == 0) {
+      if (strcmp(arg[iarg+1], "needleman") == 0)
+        cohesive.law_type = CoupMPM::CZLawType::NEEDLEMAN_XU;
+      else if (strcmp(arg[iarg+1], "linear") == 0)
+        cohesive.law_type = CoupMPM::CZLawType::LINEAR_ELASTIC;
+      else if (strcmp(arg[iarg+1], "receptor") == 0)
+        cohesive.law_type = CoupMPM::CZLawType::RECEPTOR_LIGAND;
+      iarg += 2;
+    }
+    else if (strcmp(arg[iarg], "cz_sigma") == 0) {
+      cz_sigma_tmp = atof(arg[iarg+1]); iarg += 2;
+    }
+    else if (strcmp(arg[iarg], "cz_delta") == 0) {
+      cz_delta_tmp = atof(arg[iarg+1]); iarg += 2;
+    }
+    else if (strcmp(arg[iarg], "cz_delta_max") == 0) {
+      cz_delta_max_tmp = atof(arg[iarg+1]); iarg += 2;
+    }
+    else if (strcmp(arg[iarg], "cz_form_dist") == 0) {
+      cz_form_dist_tmp = atof(arg[iarg+1]); iarg += 2;
+    }
+    else if (strcmp(arg[iarg], "cz_interval") == 0) {
+      cohesive.bond_check_interval = atoi(arg[iarg+1]); iarg += 2;
+    }
     else {
       error->all(FLERR, fmt::format("fix coupmpm: unknown keyword '{}'", arg[iarg]));
     }
@@ -329,6 +361,18 @@ void FixCoupMPM::setup(int /*vflag*/)
   // Initialize surface detector
   surface_detector = SurfaceDetector(surface_alpha);
 
+  // Initialize cohesive zone manager
+  if (cohesive.enabled) {
+    cohesive.init_params(atom->ntypes, cz_sigma_tmp, cz_sigma_tmp,
+                         cz_delta_tmp, cz_delta_tmp,
+                         cz_delta_max_tmp, cz_delta_max_tmp,
+                         cz_form_dist_tmp);
+    if (comm->me == 0 && screen)
+      fprintf(screen, "CoupMPM: cohesive zones enabled, sigma=%.4e, delta=%.4e, "
+              "form_dist=%.4e\n",
+              cz_sigma_tmp, cz_delta_tmp, cz_form_dist_tmp);
+  }
+
   if (comm->me == 0 && screen)
     fprintf(screen, "CoupMPM: setup complete, " BIGINT_FORMAT " atoms\n",
             atom->natoms);
@@ -386,6 +430,15 @@ void FixCoupMPM::initial_integrate(int /*vflag*/)
   double *Bp_flat    = (nlocal > 0) ? &Bp_arr[0][0]   : nullptr;
 
   const double dt = update->dt;
+
+  // --- Step 0b: Cohesive zone forces (before P2G) ---
+  // Forces are written to f[] and will be spread to grid during P2G.
+  if (cohesive.enabled) {
+    double *F_flat_cz = (nlocal > 0) ? &F_def[0][0] : nullptr;
+    cohesive.compute_forces(
+        nlocal, atom->nghost,
+        x, f, atom->tag, F_flat_cz, dim, dt);
+  }
 
   // --- Step 1: P2G ---
   grid.zero_grid();
@@ -733,6 +786,37 @@ void FixCoupMPM::end_of_step()
       fprintf(screen, "CoupMPM: step %ld, adaptivity: %d splits, %d merges, "
               BIGINT_FORMAT " total atoms\n",
               step_count, n_splits, n_merges, atom->natoms);
+  }
+
+  // --- Cohesive zone: detect new bonds + update damage ---
+  if (cohesive.enabled) {
+    int nlocal = atom->nlocal;
+    double *F_flat = (nlocal > 0) ? &avec->F_def[0][0] : nullptr;
+    double dx_min = std::min(grid_dx, std::min(grid_dy, grid_dz));
+
+    // Detect new bonds (every bond_check_interval steps)
+    if (cohesive.bond_check_interval > 0 &&
+        step_count % cohesive.bond_check_interval == 0) {
+      int n_new = cohesive.detect_new_bonds(
+          nlocal, atom->nghost,
+          atom->x, atom->tag, atom->type,
+          atom->molecule, avec->surface,
+          F_flat, avec->vol0,
+          step_count, dim, dx_min);
+
+      if (comm->me == 0 && screen && n_new > 0)
+        fprintf(screen, "CoupMPM: step %ld, %d new cohesive bonds formed, "
+                "%d total active\n",
+                step_count, n_new, cohesive.count_active());
+    }
+
+    // Update damage and break failed bonds (every step)
+    cohesive.update_damage_and_break(nlocal, atom->x, atom->tag, dim);
+
+    if (comm->me == 0 && screen && cohesive.n_broken_last > 0)
+      fprintf(screen, "CoupMPM: step %ld, %d cohesive bonds broken, "
+              "%d remaining\n",
+              step_count, cohesive.n_broken_last, cohesive.count_active());
   }
 }
 
