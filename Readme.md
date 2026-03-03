@@ -10,18 +10,40 @@ The solver integrates directly with the LAMMPS parallelism infrastructure. All g
 
 ```
 CoupMPM/
-├── fix_coupmpm.h/.cpp        Main fix: timestep loop, keyword parsing, grid/MPI setup
-├── atom_vec_mpm.h/.cpp       Custom atom_style mpm: MPI pack/unpack for all MPM fields
-├── coupmpm_grid.h            Background grid: SoA layout, ghost-inclusive indexing
-├── coupmpm_kernel.h          Shape functions: linear, quadratic B-spline, cubic B-spline
-├── coupmpm_transfer.h        P2G, G2P (APIC + B-bar), anti-P2G, MPI ghost exchange
-├── coupmpm_stress.h          Constitutive models: Neo-Hookean, Mooney-Rivlin
-├── coupmpm_contact.h         Multi-body contact: Bardenhagen, penalty
-├── coupmpm_surface.h         Surface detection via density gradient with MPI reduction
-├── coupmpm_adaptivity.h      Particle splitting and merging for resolution control
-├── coupmpm_cohesive.h        Dynamic Cohesive Zone module for adhesion/cell sorting
-└── coupmpm_io.h              VTK grid/particle output with PVD time-series index
+├── fix_coupmpm.h/.cpp              Parent fix: grid/MPI setup, P2G→grid solve→G2P timestep loop
+├── fix_coupmpm_contact.h/.cpp      Companion fix: multi-body contact (Bardenhagen / penalty)
+├── fix_coupmpm_cohesive.h/.cpp     Companion fix: dynamic cohesive zones and bond management
+├── fix_coupmpm_adaptivity.h/.cpp   Companion fix: particle splitting and merging
+├── fix_coupmpm_output.h/.cpp       Companion fix: VTK output and surface detection
+├── atom_vec_mpm.h/.cpp             Custom atom_style mpm: MPI pack/unpack for all MPM fields
+├── coupmpm_grid.h                  Background grid: SoA layout, ghost-inclusive indexing
+├── coupmpm_kernel.h                Shape functions: linear, quadratic B-spline, cubic B-spline
+├── coupmpm_transfer.h              P2G, G2P (APIC + B-bar), anti-P2G, MPI ghost exchange
+├── coupmpm_stress.h                Constitutive models: Neo-Hookean, Mooney-Rivlin
+├── coupmpm_contact.h               Multi-body contact algorithms: Bardenhagen, penalty
+├── coupmpm_surface.h               Surface detection via density gradient with MPI reduction
+├── coupmpm_adaptivity.h            Particle splitting and merging for resolution control
+├── coupmpm_cohesive.h              Dynamic Cohesive Zone module for adhesion/cell sorting
+└── coupmpm_io.h                    VTK grid/particle output with PVD time-series index
 ```
+
+### Companion Fix Architecture
+
+`fix coupmpm` is the **parent** fix and manages the core MPM timestep loop (P2G → grid solve → G2P). Four optional **companion fixes** extend its behaviour; each locates the parent fix in its `init()` method and registers a pointer with it:
+
+| Companion fix | Style string | Functionality |
+|---|---|---|
+| `FixCoupMPMContact` | `coupmpm/contact` | Bardenhagen / penalty contact on the grid |
+| `FixCoupMPMCohesive` | `coupmpm/cohesive` | Dynamic cohesive zone bonds |
+| `FixCoupMPMAdaptivity` | `coupmpm/adaptivity` | Particle splitting and merging |
+| `FixCoupMPMOutput` | `coupmpm/output` | VTK file output and surface detection |
+
+Companion fixes are **entirely optional**. Any subset may be used and the parent fix works standalone. Each companion:
+1. Finds the parent in `init()` via a loop over `modify->fix[]` and stores a back-pointer.
+2. Registers itself with the parent (`parent->fix_contact = this`, etc.).
+3. The parent calls contact callbacks (`pre_p2g`, `post_grid_solve`) directly inside `initial_integrate`.
+4. Cohesive force injection (`compute_forces_before_p2g`) is similarly driven by the parent before P2G.
+5. `end_of_step` callbacks (surface detection, VTK output, adaptivity, bond updates) are handled by LAMMPS calling each companion's own `end_of_step` method.
 
 ---
 
@@ -70,65 +92,112 @@ make -j8
 
 ### Fix Command Syntax
 
+The package is now split into a parent fix and four optional companion fixes.
+The parent fix **must** be defined before any companion fix.
+
+#### Parent fix (`fix coupmpm`)
+
 ```
-fix ID group-ID coupmpm                              \
-    grid <dx> <dy> <dz>                              \
-    kernel <linear|bspline2|bspline3>                \
-    bbar <yes|no>                                    \
-    contact <none|bardenhagen [mu V] [adhesion V]|penalty> \
-    constitutive <neohookean mu V kappa V            \
-                 |mooneyrivlin C1 C2 kappa>          \
-    dt_auto <yes|no>                                 \
-    energy_check <yes|no>                            \
-    vtk_interval <N>                                 \
-    vtk_prefix <prefix>                              \
-    surface_interval <N>                             \
-    surface_alpha <val>                              \
-    cfl <val>                                        \
-    rho0 <val>                                       \
-    adaptivity <yes|no>                              \
-    J_split <val>                                    \
-    J_merge <val>                                    \
-    adapt_interval <N>                               \
-    cohesive <yes|no>                                \
-    cz_law <needleman|linear|receptor>               \
-    cz_sigma <val>                                   \
-    cz_delta <val>                                   \
-    cz_delta_max <val>                               \
-    cz_form_dist <val>                               \
-    cz_interval <N>
+fix ID group-ID coupmpm              \
+    grid <dx> <dy> <dz>              \
+    kernel <linear|bspline2|bspline3> \
+    bbar <yes|no>                    \
+    constitutive <neohookean mu V kappa V \
+                 |mooneyrivlin C1 V C2 V kappa V> \
+    dt_auto <yes|no>                 \
+    energy_check <yes|no>            \
+    cfl <val>                        \
+    rho0 <val>
 ```
 
-> **Prerequisites:** The simulation must use `atom_style mpm`. All keywords are optional; defaults are listed in the table below.
+#### Companion fix: contact (`fix coupmpm/contact`)
+
+```
+fix ID group-ID coupmpm/contact \
+    method <none|bardenhagen [mu V] [adhesion V]|penalty>
+```
+
+#### Companion fix: cohesive zones (`fix coupmpm/cohesive`)
+
+```
+fix ID group-ID coupmpm/cohesive    \
+    law <needleman|linear|receptor> \
+    sigma <val>                     \
+    delta <val>                     \
+    delta_max <val>                 \
+    form_dist <val>                 \
+    interval <N>
+```
+
+#### Companion fix: adaptivity (`fix coupmpm/adaptivity`)
+
+```
+fix ID group-ID coupmpm/adaptivity \
+    J_split <val>                  \
+    J_merge <val>                  \
+    interval <N>
+```
+
+#### Companion fix: output (`fix coupmpm/output`)
+
+```
+fix ID group-ID coupmpm/output    \
+    vtk_interval <N>              \
+    vtk_prefix <prefix>           \
+    surface_interval <N>          \
+    surface_alpha <val>
+```
+
+> **Prerequisites:** The simulation must use `atom_style mpm`. All keywords are optional; defaults are listed in the table below. Each companion fix must appear **after** `fix coupmpm` in the input script.
 
 ### Keyword Reference
+
+#### `fix coupmpm` keywords
 
 | Keyword | Arguments | Default | Description |
 |---|---|---|---|
 | `grid` | `dx dy dz` | `0.1 0.1 0.1` | Background grid cell spacings in the *x*, *y*, and *z* directions (simulation-length units). |
 | `kernel` | `linear` \| `bspline2` \| `bspline3` | `linear` | Shape-function kernel. `linear` uses tent functions (support ±1 cell); `bspline2` and `bspline3` use quadratic and cubic B-spline kernels (support ±1.5 and ±2 cells, respectively), which increase smoothness and reduce quadrature noise. |
 | `bbar` | `yes` \| `no` | `yes` | Enable the B-bar volumetric anti-locking correction. Recommended for nearly incompressible materials (Poisson's ratio > 0.45). |
-| `contact` | `none` \| `bardenhagen [mu V] [adhesion V]` \| `penalty` | `none` | Multi-body contact algorithm. `bardenhagen` activates the Bardenhagen-Kober impenetrability algorithm; optional sub-keywords set the Coulomb friction coefficient `mu` (dimensionless, default 0.3) and the surface-energy adhesion parameter `adhesion` (J m⁻², default 0). `penalty` activates a spring-dashpot penalty force (parameters set internally). |
 | `constitutive` | `neohookean mu V kappa V` \| `mooneyrivlin C1 V C2 V kappa V` | Neo-Hookean with μ = 1 × 10³, κ = 1 × 10⁴ | Hyperelastic constitutive model. `neohookean` requires the shear modulus `mu` and bulk modulus `kappa` (both > 0). `mooneyrivlin` (stub) requires the two deviatoric coefficients and the bulk modulus. |
 | `dt_auto` | `yes` \| `no` | `yes` | Automatically adjust the LAMMPS timestep at each step to satisfy the CFL criterion `dt = cfl * dx / c_wave`. When `no`, the timestep specified in the input script is used unchanged. |
 | `energy_check` | `yes` \| `no` | `no` | Print a kinetic + strain energy balance to the log at every step. Useful for validating conservation in single-rank benchmarks. |
+| `cfl` | `val` | `0.3` | CFL safety factor applied to the acoustic wave-speed estimate when `dt_auto yes` is active. Typical values are 0.2–0.5. |
+| `rho0` | `val` | `1000.0` | Reference (initial) mass density in simulation units. Used for CFL wave-speed estimation and adaptive-particle mass initialisation. |
+
+#### `fix coupmpm/contact` keywords
+
+| Keyword | Arguments | Default | Description |
+|---|---|---|---|
+| `method` | `none` \| `bardenhagen [mu V] [adhesion V]` \| `penalty` | `none` | Multi-body contact algorithm. `bardenhagen` activates the Bardenhagen-Kober impenetrability algorithm; optional sub-keywords set the Coulomb friction coefficient `mu` (dimensionless, default 0.3) and the surface-energy adhesion parameter `adhesion` (J m⁻², default 0). `penalty` activates a spring-dashpot penalty force (parameters set internally). |
+
+#### `fix coupmpm/cohesive` keywords
+
+| Keyword | Arguments | Default | Description |
+|---|---|---|---|
+| `law` | `needleman` \| `linear` \| `receptor` | `needleman` | Traction-separation law for cohesive bonds. |
+| `sigma` | `val` | `100.0` | Peak cohesive traction σ_max (stress units). |
+| `delta` | `val` | `1 × 10⁻⁴` | Characteristic separation length δ_0 at peak traction (length units). |
+| `delta_max` | `val` | `2 × 10⁻⁴` | Failure separation δ_max beyond which a bond is irreversibly ruptured (length units). |
+| `form_dist` | `val` | `5 × 10⁻⁴` | Maximum particle-pair distance at which a new cohesive bond may form (length units). |
+| `interval` | `N` | `10` | Check for new bond-formation candidates and rupture events every *N* timesteps. |
+
+#### `fix coupmpm/adaptivity` keywords
+
+| Keyword | Arguments | Default | Description |
+|---|---|---|---|
+| `J_split` | `val` | `2.0` | Jacobian upper threshold. A particle with *J* > `J_split` is split into child particles to restore resolution in highly stretched regions. |
+| `J_merge` | `val` | `0.3` | Jacobian lower threshold. Particles with *J* < `J_merge` are candidates for merging with a nearest neighbour to remove over-compressed particles. |
+| `interval` | `N` | `20` | Check and apply splitting/merging every *N* timesteps. |
+
+#### `fix coupmpm/output` keywords
+
+| Keyword | Arguments | Default | Description |
+|---|---|---|---|
 | `vtk_interval` | `N` | `0` (disabled) | Write VTK files (grid and particles) every *N* timesteps. A PVD time-series index file is maintained automatically. |
 | `vtk_prefix` | `prefix` | `coupmpm` | Filename prefix for all VTK output files. |
 | `surface_interval` | `N` | `10` | Recompute the particle surface-normal field every *N* timesteps using the density-gradient method. |
 | `surface_alpha` | `val` | `0.1` | Fractional threshold for surface classification: nodes with ρ < `surface_alpha` × ρ_max are flagged as surface nodes. |
-| `cfl` | `val` | `0.3` | CFL safety factor applied to the acoustic wave-speed estimate when `dt_auto yes` is active. Typical values are 0.2–0.5. |
-| `rho0` | `val` | `1000.0` | Reference (initial) mass density in simulation units. Used for CFL wave-speed estimation and adaptive-particle mass initialisation. |
-| `adaptivity` | `yes` \| `no` | `no` | Enable dynamic particle splitting and merging based on the local Jacobian *J* = det(**F**). |
-| `J_split` | `val` | `2.0` | Jacobian upper threshold. A particle with *J* > `J_split` is split into child particles to restore resolution in highly stretched regions. |
-| `J_merge` | `val` | `0.3` | Jacobian lower threshold. Particles with *J* < `J_merge` are candidates for merging with a nearest neighbour to remove over-compressed particles. |
-| `adapt_interval` | `N` | `20` | Check and apply splitting/merging every *N* timesteps. |
-| `cohesive` | `yes` \| `no` | `no` | Enable the Dynamic Cohesive Zone (DCZ) module for runtime bond formation and rupture. Requires a LAMMPS neighbour list; activated automatically when `cohesive yes` is set. |
-| `cz_law` | `needleman` \| `linear` \| `receptor` | `needleman` | Traction-separation law for cohesive bonds. `needleman` uses the Needleman-Xu exponential potential. `linear` uses a linearly softening law. `receptor` uses a receptor-ligand kinetic binding model suitable for cell-membrane adhesion. |
-| `cz_sigma` | `val` | `100.0` | Peak cohesive traction σ_max (stress units). |
-| `cz_delta` | `val` | `1 × 10⁻⁴` | Characteristic separation length δ_0 at peak traction (length units). |
-| `cz_delta_max` | `val` | `2 × 10⁻⁴` | Failure separation δ_max beyond which a bond is irreversibly ruptured (length units). |
-| `cz_form_dist` | `val` | `5 × 10⁻⁴` | Maximum particle-pair distance at which a new cohesive bond may form (length units). |
-| `cz_interval` | `N` | `10` | Check for new bond-formation candidates and rupture events every *N* timesteps. |
 
 ---
 
@@ -150,16 +219,22 @@ atom_modify     map array
 
 read_data       block.data          # atom-ID mol-ID type x y z vol0
 
-# Material point method fix
+# Parent fix: grid, kernel, constitutive model
 fix mpm all coupmpm                 \
     grid 0.05 0.05 0.05             \
     kernel bspline2                 \
     bbar yes                        \
-    contact bardenhagen mu 0.2      \
     constitutive neohookean mu 1e4 kappa 1e5 \
     dt_auto yes                     \
     cfl 0.3                         \
-    rho0 1200.0                     \
+    rho0 1200.0
+
+# Contact companion
+fix contact all coupmpm/contact     \
+    method bardenhagen mu 0.2
+
+# Output companion
+fix viz all coupmpm/output          \
     vtk_interval 50                 \
     vtk_prefix compress
 
@@ -183,16 +258,21 @@ fix mpm all coupmpm                         \
     grid 2.0e-6 2.0e-6 2.0e-6              \
     kernel bspline3                         \
     bbar yes                                \
-    contact bardenhagen mu 0.0 adhesion 5e-4 \
     constitutive neohookean mu 500.0 kappa 2000.0 \
-    dt_auto yes cfl 0.25 rho0 1050.0        \
-    cohesive yes                            \
-    cz_law receptor                         \
-    cz_sigma 200.0                          \
-    cz_delta 5e-7                           \
-    cz_delta_max 1.2e-6                     \
-    cz_form_dist 3e-6                       \
-    cz_interval 5                           \
+    dt_auto yes cfl 0.25 rho0 1050.0
+
+fix contact all coupmpm/contact             \
+    method bardenhagen mu 0.0 adhesion 5e-4
+
+fix cz all coupmpm/cohesive                 \
+    law receptor                            \
+    sigma 200.0                             \
+    delta 5e-7                              \
+    delta_max 1.2e-6                        \
+    form_dist 3e-6                          \
+    interval 5
+
+fix viz all coupmpm/output                  \
     vtk_interval 100 vtk_prefix cells
 ```
 
@@ -224,7 +304,11 @@ The following issues are known and deferred for future development:
 - **`coupmpm_adaptivity`**: Jacobian-based particle splitting and nearest-neighbour merging with LAMMPS atom-management integration.
 - **`coupmpm_cohesive`**: Dynamic Cohesive Zone module with three traction-separation laws and runtime bond formation/rupture.
 - **`coupmpm_io`**: Grid VTK, particle VTK, and PVD time-series output.
-- **`fix_coupmpm`**: Keyword parsing, grid/MPI setup, complete Verlet timestep loop, CFL control, VTK output, surface detection, adaptivity, and cohesive zone management.
+- **`fix_coupmpm`** (parent): Keyword parsing, grid/MPI setup, complete Verlet timestep loop (P2G → grid solve → G2P), CFL control.  Exposes public state for companion fixes.
+- **`fix_coupmpm_contact`**: Companion fix wrapping `MPMContact`; called by parent at pre-P2G and post-grid-solve.
+- **`fix_coupmpm_cohesive`**: Companion fix for dynamic cohesive zones; force injection via parent callback; bond detection and damage update in `end_of_step`; `pack/unpack_exchange` for bond migration.
+- **`fix_coupmpm_adaptivity`**: Companion fix for particle splitting and merging in `end_of_step`.
+- **`fix_coupmpm_output`**: Companion fix for VTK output and surface detection in `end_of_step`.
 
 ### Stubs and Future Work
 - Mooney-Rivlin constitutive model (stub only)
