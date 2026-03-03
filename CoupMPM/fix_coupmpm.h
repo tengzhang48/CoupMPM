@@ -13,6 +13,7 @@ FixStyle(coupmpm, FixCoupMPM);
 #include "coupmpm_contact.h"
 #include "coupmpm_surface.h"
 #include "coupmpm_adaptivity.h"
+#include "coupmpm_cohesive.h"
 #include "coupmpm_io.h"
 #include <memory>
 #include <string>
@@ -49,6 +50,7 @@ private:
   CoupMPM::MPMGhostExchange ghost_exchange;
   CoupMPM::SurfaceDetector surface_detector;
   CoupMPM::ParticleAdaptivity adaptivity;
+  CoupMPM::CohesiveZoneManager cohesive;
 
   // P2G records for anti-P2G migration protocol
   std::vector<CoupMPM::P2GRecord> p2g_records;
@@ -60,6 +62,7 @@ private:
   std::string vtk_prefix;
   double cfl_factor, rho0;
   double surface_alpha;
+  double cz_sigma_tmp, cz_delta_tmp, cz_delta_max_tmp, cz_form_dist_tmp;
   double domain_lo[3], domain_hi[3];
   int Nx_global, Ny_global, Nz_global;
   std::vector<long> vtk_steps;
