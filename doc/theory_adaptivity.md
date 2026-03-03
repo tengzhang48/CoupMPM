@@ -19,7 +19,7 @@ CoupMPM addresses both pathologies with a dynamic particle adaptivity algorithm
 implemented in `coupmpm_adaptivity.h`.  At configurable intervals the algorithm:
 
 1. **Splits** particles whose volume has expanded beyond a threshold by replacing the
-   parent with $2^{n_\mathrm{dim}}$ children placed symmetrically around the parent
+   parent with $2^{n_{\text{dim}}}$ children placed symmetrically around the parent
    position;
 2. **Merges** pairs of over-compressed particles from the same body into a single
    merged particle.
@@ -49,10 +49,10 @@ current volume to reference volume.  The following thresholds govern adaptivity:
 
 | Condition | Action |
 |-----------|--------|
-| $J_p > J_\mathrm{hi}$ | Split particle $p$ |
-| $J_p < J_\mathrm{lo}$ | Mark $p$ as merge candidate |
+| $J_p > J_{\text{hi}}$ | Split particle $p$ |
+| $J_p < J_{\text{lo}}$ | Mark $p$ as merge candidate |
 
-Default values: $J_\mathrm{hi} = 2.0$, $J_\mathrm{lo} = 0.3$.  These may be tuned
+Default values: $J_{\text{hi}} = 2.0$, $J_{\text{lo}} = 0.3$.  These may be tuned
 to the expected deformation range of the simulation.
 
 In `find_split_candidates()`:
@@ -66,14 +66,14 @@ if (J > J_split_hi)
 ### 2.2 Nearest-Neighbour Distance Criterion
 
 In addition to the Jacobian threshold, a particle $p$ triggers splitting if its
-nearest same-body neighbour is farther than $d_\mathrm{split} \, \Delta x_\mathrm{min}$,
-where $\Delta x_\mathrm{min}$ is the minimum grid spacing.  This criterion catches
-tension-driven particle separation even when $J$ has not yet exceeded $J_\mathrm{hi}$.
+nearest same-body neighbour is farther than $d_{\text{split}} \; \Delta x_{\min}$,
+where $\Delta x_{\min}$ is the minimum grid spacing.  This criterion catches
+tension-driven particle separation even when $J$ has not yet exceeded $J_{\text{hi}}$.
 
 Similarly, two particles $p$ and $q$ from the same body are merge candidates if their
-separation falls below $d_\mathrm{merge} \, \Delta x_\mathrm{min}$.
+separation falls below $d_{\text{merge}} \; \Delta x_{\min}$.
 
-Default values: $d_\mathrm{split} = 1.8$, $d_\mathrm{merge} = 0.3$.
+Default values: $d_{\text{split}} = 1.8$, $d_{\text{merge}} = 0.3$.
 
 ---
 
@@ -82,24 +82,24 @@ Default values: $d_\mathrm{split} = 1.8$, $d_\mathrm{merge} = 0.3$.
 ### 3.1 Child Placement
 
 A parent particle $p$ at position $\mathbf{x}_p$ is replaced by
-$n_\mathrm{child} = 2^{n_\mathrm{dim}}$ children ($n_\mathrm{child} = 4$ in 2D,
+$n_{\text{child}} = 2^{n_{\text{dim}}}$ children ($n_{\text{child}} = 4$ in 2D,
 $8$ in 3D).  Each child $c$ is placed at
 
 $$
 \mathbf{x}_c = \mathbf{x}_p + \boldsymbol{\epsilon}_c \, \delta,
 $$
 
-where $\boldsymbol{\epsilon}_c \in \{-1,+1\}^{n_\mathrm{dim}}$ is a sign vector
+where $\boldsymbol{\epsilon}_c \in \{-1,+1\}^{n_{\text{dim}}}$ is a sign vector
 that selects one corner of a hypercube, and $\delta$ is a scalar offset chosen from
 the current particle spacing:
 
 $$
-\delta = \tfrac{1}{4} \, s_p,
+\delta = \frac{1}{4} \, s_p,
 \qquad
 s_p =
 \begin{cases}
-\bigl(V_p^0 \, |J_p|\bigr)^{1/3} & \text{(3D)}, \\
-\bigl(V_p^0 \, |J_p|\bigr)^{1/2} & \text{(2D)},
+\left(V_p^0 \, |J_p|\right)^{1/3} & \text{(3D)}, \\
+\left(V_p^0 \, |J_p|\right)^{1/2} & \text{(2D)},
 \end{cases}
 $$
 
@@ -111,8 +111,8 @@ The complete set of 3D child positions ($\boldsymbol{\epsilon}_c$ patterns) is:
 
 $$
 \boldsymbol{\epsilon}_c \in
-\bigl\{(-1,-1,-1),\;(+1,-1,-1),\;(-1,+1,-1),\;(+1,+1,-1),\;
-       (-1,-1,+1),\;(+1,-1,+1),\;(-1,+1,+1),\;(+1,+1,+1)\bigr\}.
+\left\lbrace(-1,-1,-1),\;(+1,-1,-1),\;(-1,+1,-1),\;(+1,+1,-1),\;
+       (-1,-1,+1),\;(+1,-1,+1),\;(-1,+1,+1),\;(+1,+1,+1)\right\rbrace.
 $$
 
 ### 3.2 Conservation During Splitting
@@ -122,9 +122,9 @@ deformation gradient $\mathbf{F}_p$, and Cauchy stress $\boldsymbol{\sigma}_p$.
 Each child $c$ receives
 
 $$
-m_c = \frac{m_p}{n_\mathrm{child}},
+m_c = \frac{m_p}{n_{\text{child}}},
 \qquad
-V_c^0 = \frac{V_p^0}{n_\mathrm{child}},
+V_c^0 = \frac{V_p^0}{n_{\text{child}}},
 \qquad
 \mathbf{v}_c = \mathbf{v}_p,
 \qquad
@@ -136,16 +136,16 @@ $$
 **Mass conservation** is exact by construction:
 
 $$
-\sum_{c=1}^{n_\mathrm{child}} m_c
-= n_\mathrm{child} \cdot \frac{m_p}{n_\mathrm{child}}
+\sum_{c=1}^{n_{\text{child}}} m_c
+= n_{\text{child}} \cdot \frac{m_p}{n_{\text{child}}}
 = m_p. \tag{1}
 $$
 
 **Reference volume conservation** is exact:
 
 $$
-\sum_{c=1}^{n_\mathrm{child}} V_c^0
-= n_\mathrm{child} \cdot \frac{V_p^0}{n_\mathrm{child}}
+\sum_{c=1}^{n_{\text{child}}} V_c^0
+= n_{\text{child}} \cdot \frac{V_p^0}{n_{\text{child}}}
 = V_p^0. \tag{2}
 $$
 
@@ -153,8 +153,8 @@ $$
 velocity $\mathbf{v}_p$,
 
 $$
-\sum_{c=1}^{n_\mathrm{child}} m_c \, \mathbf{v}_c
-= \left(\sum_{c=1}^{n_\mathrm{child}} m_c\right) \mathbf{v}_p
+\sum_{c=1}^{n_{\text{child}}} m_c \, \mathbf{v}_c
+= \left(\sum_{c=1}^{n_{\text{child}}} m_c\right) \mathbf{v}_p
 = m_p \, \mathbf{v}_p. \tag{3}
 $$
 
@@ -163,19 +163,19 @@ of the parent about the origin is $\mathbf{L}_p = m_p \, \mathbf{x}_p \times \ma
 The angular momentum of the child system is
 
 $$
-\mathbf{L}_\mathrm{children}
-= \sum_{c=1}^{n_\mathrm{child}} m_c \, \mathbf{x}_c \times \mathbf{v}_c
-= \sum_{c=1}^{n_\mathrm{child}} m_c \, (\mathbf{x}_p + \boldsymbol{\epsilon}_c \delta)
+\mathbf{L}_{\text{children}}
+= \sum_{c=1}^{n_{\text{child}}} m_c \, \mathbf{x}_c \times \mathbf{v}_c
+= \sum_{c=1}^{n_{\text{child}}} m_c \, (\mathbf{x}_p + \boldsymbol{\epsilon}_c \delta)
   \times \mathbf{v}_p.
 $$
 
 Expanding:
 
 $$
-\mathbf{L}_\mathrm{children}
+\mathbf{L}_{\text{children}}
 = m_p \, \mathbf{x}_p \times \mathbf{v}_p
-  + \delta \underbrace{\left(\sum_{c=1}^{n_\mathrm{child}} m_c \,
-  \boldsymbol{\epsilon}_c\right)}_{\displaystyle = \mathbf{0}} \times \mathbf{v}_p. \tag{4}
+  + \delta \underbrace{\left(\sum_{c=1}^{n_{\text{child}}} m_c \,
+  \boldsymbol{\epsilon}_c\right)}_{= \, \mathbf{0}} \times \mathbf{v}_p. \tag{4}
 $$
 
 The residual sum vanishes because the sign vectors $\boldsymbol{\epsilon}_c$ are
@@ -183,7 +183,7 @@ arranged symmetrically: for every child at $+\delta$ in each direction there is 
 partner at $-\delta$, so $\sum_c \boldsymbol{\epsilon}_c = \mathbf{0}$.  Therefore
 
 $$
-\mathbf{L}_\mathrm{children} = m_p \, \mathbf{x}_p \times \mathbf{v}_p = \mathbf{L}_p. \tag{5}
+\mathbf{L}_{\text{children}} = m_p \, \mathbf{x}_p \times \mathbf{v}_p = \mathbf{L}_p. \tag{5}
 $$
 
 Angular momentum is thus conserved **exactly** for any finite $\delta$, because the
@@ -228,9 +228,9 @@ std::memcpy(c.state,    state_p, n_state * sizeof(double));
 ### 4.1 Merge-Candidate Selection
 
 Merge candidates are identified in two stages.  First, particles with
-$J_p < J_\mathrm{lo}$ are labelled *compressed*.  Then, within the set of compressed
+$J_p < J_{\text{lo}}$ are labelled *compressed*.  Then, within the set of compressed
 particles belonging to the same body, nearest-neighbour pairs closer than
-$d_\mathrm{merge} \, \Delta x_\mathrm{min}$ are selected as merge pairs.  A greedy
+$d_{\text{merge}} \; \Delta x_{\min}$ are selected as merge pairs.  A greedy
 matching algorithm ensures that each particle appears in at most one pair per
 adaptivity step.
 
@@ -302,7 +302,7 @@ heavier particle.
 **Rationale.**  Merging events occur in compression zones where $J_p \ll 1$ and the
 two particles necessarily carry similar $\mathbf{F}$ values (both are compressed by the
 same macroscopic deformation field).  Taking the heavier particle's $\mathbf{F}$
-introduces an error that is second order in the difference $\|\mathbf{F}_i - \mathbf{F}_j\|$,
+introduces an error that is second order in the difference $\lVert\mathbf{F}_i - \mathbf{F}_j\rVert$,
 which is small relative to the magnitude of $\mathbf{F}$.  An alternative mass-weighted
 polar decomposition would be more accurate but is computationally expensive and not
 justified in the compression regime where merging occurs.
@@ -354,8 +354,8 @@ $$
 
 The residual (last term) vanishes exactly when either the two particles are co-located ($\mathbf{x}_i = \mathbf{x}_j$) or co-moving ($\mathbf{v}_i = \mathbf{v}_j$).
 For particles in the same compression zone — where $|\mathbf{x}_i - \mathbf{x}_j|
-\ll \Delta x$ and $|\mathbf{v}_i - \mathbf{v}_j| \ll \|\mathbf{v}\|$ — the angular
-momentum error is of order $\mathcal{O}(\Delta x \, \|\mathbf{v}\| \, m_i m_j / m_m)$,
+\ll \Delta x$ and $|\mathbf{v}_i - \mathbf{v}_j| \ll \lVert\mathbf{v}\rVert$ — the angular
+momentum error is of order $\mathcal{O}(\Delta x \, \lVert\mathbf{v}\rVert \, m_i m_j / m_m)$,
 which is small compared to the total angular momentum.
 
 ---
@@ -367,7 +367,7 @@ which is small compared to the total angular momentum.
 | Total mass $\sum m_p$ | Exact (Eq. 1) | Exact (Eq. 7) |
 | Total reference volume $\sum V_p^0$ | Exact (Eq. 2) | Exact (Eq. 8) |
 | Total linear momentum $\sum m_p \mathbf{v}_p$ | Exact (Eq. 3) | Exact (Eq. 13) |
-| Total angular momentum $\sum m_p \mathbf{x}_p \times \mathbf{v}_p$ | Exact (Eq. 5) | $\mathcal{O}(\Delta x \|\mathbf{v}\|)$ error |
+| Total angular momentum $\sum m_p \mathbf{x}_p \times \mathbf{v}_p$ | Exact (Eq. 5) | $\mathcal{O}(\Delta x \lVert\mathbf{v}\rVert)$ error |
 | Deformation gradient $\mathbf{F}_p$ | Exact copy (Eq. 6) | Heavier particle (Eq. 12) |
 | Cauchy stress $\boldsymbol{\sigma}_p$ | Exact copy (Eq. 6) | Heavier particle (Eq. 12) |
 | APIC affine matrix $\mathbf{C}_p$ | Exact copy (Eq. 6) | Mass-weighted (Eq. 11) |
@@ -379,7 +379,7 @@ which is small compared to the total angular momentum.
 
 Both operations interact with the LAMMPS atom-management layer:
 
-- **Splitting** creates $n_\mathrm{child} - 1$ new atoms by growing the per-atom
+- **Splitting** creates $n_{\text{child}} - 1$ new atoms by growing the per-atom
   arrays and populating all fields of the `ChildParticle` struct.  The parent is
   replaced in-place by the first child.  A neighbour-list rebuild is flagged
   immediately after.
@@ -400,12 +400,12 @@ The complete per-interval adaptivity procedure is as follows.
 **Split pass:**
 
 1. For each particle $p$, compute $J_p = \det(\mathbf{F}_p)$.
-2. If $J_p > J_\mathrm{hi}$, add $p$ to the split list.
+2. If $J_p > J_{\text{hi}}$, add $p$ to the split list.
 3. For each $p$ in the split list, call `generate_children()`:
-   - Compute child offset $\delta = \tfrac{1}{4}(V_p^0 |J_p|)^{1/n_\mathrm{dim}}$.
-   - Generate $n_\mathrm{child}$ children with positions
+   - Compute child offset $\delta = \frac{1}{4}(V_p^0 |J_p|)^{1/n_{\text{dim}}}$.
+   - Generate $n_{\text{child}}$ children with positions
      $\mathbf{x}_c = \mathbf{x}_p + \boldsymbol{\epsilon}_c \delta$, and with
-     $m_c = m_p/n_\mathrm{child}$, $V_c^0 = V_p^0/n_\mathrm{child}$,
+     $m_c = m_p/n_{\text{child}}$, $V_c^0 = V_p^0/n_{\text{child}}$,
      $\mathbf{v}_c = \mathbf{v}_p$, $\mathbf{F}_c = \mathbf{F}_p$,
      $\boldsymbol{\sigma}_c = \boldsymbol{\sigma}_p$.
 4. Insert children into the LAMMPS atom arrays; flag neighbour rebuild.
@@ -413,9 +413,9 @@ The complete per-interval adaptivity procedure is as follows.
 **Merge pass:**
 
 1. For each particle $p$, compute $J_p = \det(\mathbf{F}_p)$.
-2. Collect the subset $\mathcal{C}$ of particles with $J_p < J_\mathrm{lo}$.
+2. Collect the subset $\mathcal{C}$ of particles with $J_p < J_{\text{lo}}$.
 3. Within $\mathcal{C}$, find nearest same-body pairs $(i,j)$ closer than
-   $d_\mathrm{merge} \, \Delta x_\mathrm{min}$ via greedy nearest-neighbour matching.
+   $d_{\text{merge}} \; \Delta x_{\min}$ via greedy nearest-neighbour matching.
 4. For each pair $(i,j)$, call `merge_particles()`:
    - $m_m = m_i + m_j$, $V_m^0 = V_i^0 + V_j^0$.
    - $\mathbf{x}_m = (m_i\mathbf{x}_i + m_j\mathbf{x}_j)/m_m$,
