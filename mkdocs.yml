@@ -1,0 +1,24 @@
+site_name: CoupMPM Documentation
+
+theme:
+  name: material
+
+markdown_extensions:
+  - pymdownx.arithmatex:
+      generic: true
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - Home: index.md
+  - Theory Manual:
+    - Core MPM & APIC: theory_apic_transfer.md
+    - B-bar Anti-Locking: theory_bbar_locking.md
+    - Multi-Body Contact: theory_bardenhagen_contact.md
+    - Dynamic Cohesive Zones: theory_dynamic_cohesive.md
+    - Particle Adaptivity: theory_adaptivity.md
