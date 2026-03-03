@@ -1,0 +1,1582 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://tengzhang48.github.io/CoupMPM/theory_apic_transfer/">
+      
+      
+        <link rel="prev" href="../keywords/">
+      
+      
+        <link rel="next" href="../theory_bbar_locking/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+    
+    
+      
+        <title>Core MPM & APIC - CoupMPM Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#theory-core-mpm-and-affine-particle-in-cell-apic-transfers" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="CoupMPM Documentation" class="md-header__button md-logo" aria-label="CoupMPM Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CoupMPM Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Core MPM & APIC
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="CoupMPM Documentation" class="md-nav__button md-logo" aria-label="CoupMPM Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    CoupMPM Documentation
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../keywords/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Keywords & Syntax
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory Manual
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory Manual
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core MPM & APIC
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core MPM & APIC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-governing-equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Governing Equations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-shape-functions-and-the-kernel-w_ip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Shape Functions and the Kernel \(w_{ip}\)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-particle-to-grid-p2g-transfer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Particle-to-Grid (P2G) Transfer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Particle-to-Grid (P2G) Transfer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-mass-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Mass Mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-apic-momentum-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 APIC Momentum Mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-internal-force-stress-divergence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Internal Force (Stress Divergence)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-external-force-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 External Force Mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-b-bar-volumetric-strain-rate-accumulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 B-Bar Volumetric Strain Rate Accumulation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-grid-equations-of-motion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Grid Equations of Motion
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-grid-to-particle-g2p-transfer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Grid-to-Particle (G2P) Transfer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Grid-to-Particle (G2P) Transfer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-velocity-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Velocity Update
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-apic-affine-matrix-construction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 APIC Affine Matrix Construction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-velocity-gradient" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Velocity Gradient
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-b-bar-smoothed-divergence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 B-Bar Smoothed Divergence
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-the-apic-affine-matrix-mathbfc_p-and-angular-momentum-conservation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. The APIC Affine Matrix \(\mathbf{C}_p\) and Angular Momentum Conservation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. The APIC Affine Matrix \(\mathbf{C}_p\) and Angular Momentum Conservation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-particle-inertia-tensor-mathbfd_p" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Particle Inertia Tensor \(\mathbf{D}_p\)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-angular-momentum-conservation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Angular Momentum Conservation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-b-bar-volumetric-anti-locking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. B-Bar Volumetric Anti-Locking
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-deformation-gradient-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Deformation Gradient Update
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-summary-of-the-per-timestep-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Summary of the Per-Timestep Algorithm
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory_bbar_locking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    B-bar Anti-Locking
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory_bardenhagen_contact/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Body Contact
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory_dynamic_cohesive/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dynamic Cohesive Zones
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory_adaptivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Particle Adaptivity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-governing-equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Governing Equations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-shape-functions-and-the-kernel-w_ip" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Shape Functions and the Kernel \(w_{ip}\)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-particle-to-grid-p2g-transfer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Particle-to-Grid (P2G) Transfer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Particle-to-Grid (P2G) Transfer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-mass-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Mass Mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-apic-momentum-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 APIC Momentum Mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-internal-force-stress-divergence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Internal Force (Stress Divergence)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-external-force-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 External Force Mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-b-bar-volumetric-strain-rate-accumulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 B-Bar Volumetric Strain Rate Accumulation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-grid-equations-of-motion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Grid Equations of Motion
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-grid-to-particle-g2p-transfer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Grid-to-Particle (G2P) Transfer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Grid-to-Particle (G2P) Transfer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-velocity-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Velocity Update
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-apic-affine-matrix-construction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 APIC Affine Matrix Construction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-velocity-gradient" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Velocity Gradient
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-b-bar-smoothed-divergence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 B-Bar Smoothed Divergence
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-the-apic-affine-matrix-mathbfc_p-and-angular-momentum-conservation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. The APIC Affine Matrix \(\mathbf{C}_p\) and Angular Momentum Conservation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. The APIC Affine Matrix \(\mathbf{C}_p\) and Angular Momentum Conservation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-particle-inertia-tensor-mathbfd_p" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Particle Inertia Tensor \(\mathbf{D}_p\)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-angular-momentum-conservation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Angular Momentum Conservation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-b-bar-volumetric-anti-locking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. B-Bar Volumetric Anti-Locking
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-deformation-gradient-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Deformation Gradient Update
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-summary-of-the-per-timestep-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Summary of the Per-Timestep Algorithm
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="theory-core-mpm-and-affine-particle-in-cell-apic-transfers">Theory: Core MPM and Affine Particle-In-Cell (APIC) Transfers</h1>
+<h2 id="1-overview">1. Overview</h2>
+<p>The Material Point Method (MPM) is an Eulerian–Lagrangian numerical method in which continuum bodies are discretized into a set of Lagrangian material points (particles) carrying all state variables — mass, velocity, deformation gradient, and internal stress — while a background Eulerian grid serves as a scratch-space for solving the equations of motion. At each timestep, particle data are mapped to the grid (Particle-to-Grid, <strong>P2G</strong>), the grid momentum equations are integrated, and the updated grid velocities are mapped back to the particles (Grid-to-Particle, <strong>G2P</strong>).</p>
+<p>CoupMPM implements the <strong>Affine Particle-In-Cell (APIC)</strong> formulation of Jiang et al. (2015, 2017). Each particle carries, in addition to its translational velocity <span class="arithmatex">\(\mathbf{v}_p\)</span>, a <span class="arithmatex">\(3\times3\)</span> affine velocity matrix <span class="arithmatex">\(\mathbf{C}_p\)</span> (stored in the <code>Bp</code> array) that encodes the locally affine structure of the velocity field in the particle's neighbourhood. The APIC formulation is provably angular-momentum conserving and free of the numerical dissipation that afflicts classical PIC while remaining more stable than FLIP.</p>
+<hr />
+<h2 id="2-governing-equations">2. Governing Equations</h2>
+<p>The quasi-static and dynamic behaviour of a continuum body <span class="arithmatex">\(\Omega\)</span> is governed by the balance of linear momentum:</p>
+<div class="arithmatex">\[
+\rho \dot{\mathbf{v}} = \nabla \cdot \boldsymbol{\sigma} + \rho \mathbf{b}, \quad \mathbf{x} \in \Omega,
+\]</div>
+<p>where <span class="arithmatex">\(\rho\)</span> is the current mass density, <span class="arithmatex">\(\mathbf{v}\)</span> the velocity field, <span class="arithmatex">\(\boldsymbol{\sigma}\)</span> the Cauchy stress tensor, and <span class="arithmatex">\(\mathbf{b}\)</span> the body force per unit mass. The weak (Galerkin) form of this equation over a test domain <span class="arithmatex">\(\Omega\)</span> reads:</p>
+<div class="arithmatex">\[
+\int_\Omega \rho \dot{\mathbf{v}} \cdot \boldsymbol{\eta} \, dV
+= - \int_\Omega \boldsymbol{\sigma} : \nabla \boldsymbol{\eta} \, dV
++ \int_{\partial \Omega} \boldsymbol{\sigma} \mathbf{n} \cdot \boldsymbol{\eta} \, dA
++ \int_\Omega \rho \mathbf{b} \cdot \boldsymbol{\eta} \, dV
+\quad \forall \boldsymbol{\eta},
+\]</div>
+<p>where integration by parts has been applied to the divergence term. In the MPM discretization, the particle quadrature rule replaces the volume integrals, and the grid shape functions provide the test and trial spaces.</p>
+<hr />
+<h2 id="3-shape-functions-and-the-kernel-w_ip">3. Shape Functions and the Kernel <span class="arithmatex">\(w_{ip}\)</span></h2>
+<p>Let <span class="arithmatex">\(\mathbf{x}_p\)</span> be the position of particle <span class="arithmatex">\(p\)</span> and <span class="arithmatex">\(\mathbf{x}_i\)</span> the position of grid node <span class="arithmatex">\(i\)</span>. The nodal weight <span class="arithmatex">\(w_{ip}\)</span> and its gradient <span class="arithmatex">\(\nabla w_{ip}\)</span> are evaluated as a tensor product of one-dimensional basis functions <span class="arithmatex">\(N\)</span> in each spatial direction:</p>
+<div class="arithmatex">\[
+w_{ip} = \prod_{d \in \{x,y,z\}} N\!\left(\frac{x_p^{(d)} - x_i^{(d)}}{\Delta x^{(d)}}\right),
+\qquad
+\frac{\partial w_{ip}}{\partial x^{(d)}} = \frac{1}{\Delta x^{(d)}} N'\!\left(\frac{x_p^{(d)} - x_i^{(d)}}{\Delta x^{(d)}}\right) \prod_{e \neq d} N\!\left(\frac{x_p^{(e)} - x_i^{(e)}}{\Delta x^{(e)}}\right),
+\]</div>
+<p>where <span class="arithmatex">\(\Delta x^{(d)}\)</span> is the grid spacing in direction <span class="arithmatex">\(d\)</span>. Three kernel choices are implemented in <code>coupmpm_kernel.h</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Kernel</th>
+<th>Order</th>
+<th>1-D support</th>
+<th><span class="arithmatex">\(N(r)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Linear</td>
+<td><span class="arithmatex">\(C^0\)</span></td>
+<td><span class="arithmatex">\(\lvert r \rvert &lt; 1\)</span></td>
+<td><span class="arithmatex">\(1 - \lvert r \rvert\)</span></td>
+</tr>
+<tr>
+<td>Quadratic B-spline</td>
+<td><span class="arithmatex">\(C^1\)</span></td>
+<td><span class="arithmatex">\(\lvert r \rvert &lt; 1.5\)</span></td>
+<td><span class="arithmatex">\(\tfrac{3}{4} - r^2\)</span> for <span class="arithmatex">\(\lvert r \rvert &lt; \tfrac{1}{2}\)</span>; <span class="arithmatex">\(\tfrac{1}{2}({\tfrac{3}{2} - \lvert r \rvert})^2\)</span> for <span class="arithmatex">\(\tfrac{1}{2} \le \lvert r \rvert &lt; \tfrac{3}{2}\)</span></td>
+</tr>
+<tr>
+<td>Cubic B-spline</td>
+<td><span class="arithmatex">\(C^2\)</span></td>
+<td><span class="arithmatex">\(\lvert r \rvert &lt; 2\)</span></td>
+<td><span class="arithmatex">\(\tfrac{1}{2}\lvert r \rvert^3 - r^2 + \tfrac{2}{3}\)</span> for <span class="arithmatex">\(\lvert r \rvert &lt; 1\)</span>; <span class="arithmatex">\(\tfrac{1}{6}(2 - \lvert r \rvert)^3\)</span> for <span class="arithmatex">\(1 \le \lvert r \rvert &lt; 2\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The weights satisfy the partition-of-unity property <span class="arithmatex">\(\sum_i w_{ip} = 1\)</span> and the support of each basis is strictly local, ensuring a sparse interaction stencil (at most <span class="arithmatex">\(2^3\)</span>, <span class="arithmatex">\(3^3\)</span>, or <span class="arithmatex">\(4^3\)</span> nodes for linear, quadratic, and cubic kernels, respectively).</p>
+<hr />
+<h2 id="4-particle-to-grid-p2g-transfer">4. Particle-to-Grid (P2G) Transfer</h2>
+<p>Prior to each P2G step, all grid fields are zeroed. Contributions from all particles are then accumulated on the grid.</p>
+<h3 id="41-mass-mapping">4.1 Mass Mapping</h3>
+<p>The discrete mass at grid node <span class="arithmatex">\(i\)</span> is</p>
+<div class="arithmatex">\[
+m_i = \sum_p w_{ip} \, m_p,
+\]</div>
+<p>where <span class="arithmatex">\(m_p\)</span> is the mass of particle <span class="arithmatex">\(p\)</span>. This is a direct weak-form quadrature of the density field using particles as integration points.</p>
+<p>In <code>p2g()</code>:
+<div class="highlight"><pre><span></span><code>grid.mass[n] += w * mp;
+</code></pre></div></p>
+<h3 id="42-apic-momentum-mapping">4.2 APIC Momentum Mapping</h3>
+<p>In the classical PIC scheme the momentum transferred to node <span class="arithmatex">\(i\)</span> is <span class="arithmatex">\(m_p w_{ip} \mathbf{v}_p\)</span>, which dissipates angular momentum. APIC augments the particle velocity with a locally affine correction: each particle <span class="arithmatex">\(p\)</span> carries a <span class="arithmatex">\(3\times3\)</span> affine matrix <span class="arithmatex">\(\mathbf{C}_p\)</span> such that the effective velocity at an arbitrary position <span class="arithmatex">\(\mathbf{x}\)</span> near the particle is</p>
+<div class="arithmatex">\[
+\tilde{\mathbf{v}}_p(\mathbf{x}) = \mathbf{v}_p + \mathbf{C}_p \, (\mathbf{x} - \mathbf{x}_p).
+\]</div>
+<p>The APIC P2G momentum transfer evaluates this affine velocity at each node position:</p>
+<div class="arithmatex">\[
+(m\mathbf{v})_i = \sum_p w_{ip} \, m_p \left[ \mathbf{v}_p + \mathbf{C}_p \, (\mathbf{x}_i - \mathbf{x}_p) \right].
+\]</div>
+<p>In component form, the <span class="arithmatex">\(\alpha\)</span>-component of momentum at node <span class="arithmatex">\(i\)</span> is:</p>
+<div class="arithmatex">\[
+(mv_\alpha)_i = \sum_p w_{ip} \, m_p \left( v_p^\alpha + \sum_{\beta} C_p^{\alpha\beta} \, (x_i^\beta - x_p^\beta) \right).
+\]</div>
+<p>In <code>p2g()</code>:
+<div class="highlight"><pre><span></span><code><span class="kt">double</span><span class="w"> </span><span class="n">v_apic_0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vp</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w"> </span><span class="n">e</span><span class="o">++</span><span class="p">)</span>
+<span class="w">    </span><span class="n">v_apic_0</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">Cp</span><span class="p">[</span><span class="mi">0</span><span class="o">*</span><span class="mi">3</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">e</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dx_pn</span><span class="p">[</span><span class="n">e</span><span class="p">];</span><span class="w">   </span><span class="c1">// dx_pn = x_node - x_p</span>
+<span class="n">grid</span><span class="p">.</span><span class="n">momentum_x</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">mp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">v_apic_0</span><span class="p">;</span>
+</code></pre></div></p>
+<h3 id="43-internal-force-stress-divergence">4.3 Internal Force (Stress Divergence)</h3>
+<p>The discrete internal nodal force is obtained by the standard MPM quadrature of the weak-form stress-divergence term:</p>
+<div class="arithmatex">\[
+\mathbf{f}_i^{\mathrm{int}} = - \sum_p V_p \, \boldsymbol{\sigma}_p \cdot \nabla w_{ip},
+\]</div>
+<p>where <span class="arithmatex">\(V_p = V_p^0 \, J_p\)</span> is the current volume of particle <span class="arithmatex">\(p\)</span>, <span class="arithmatex">\(V_p^0\)</span> its reference volume, <span class="arithmatex">\(J_p = \det(\mathbf{F}_p)\)</span> the Jacobian of the deformation gradient, and <span class="arithmatex">\(\boldsymbol{\sigma}_p\)</span> the symmetric Cauchy stress tensor at particle <span class="arithmatex">\(p\)</span>. In index notation:</p>
+<div class="arithmatex">\[
+f_i^{\mathrm{int},\alpha} = - \sum_p V_p \sum_{\beta} \sigma_p^{\alpha\beta} \, \frac{\partial w_{ip}}{\partial x^\beta}.
+\]</div>
+<p>The Cauchy stress is stored internally in full <span class="arithmatex">\(3\times3\)</span> form, reconstructed from the six-component Voigt vector <span class="arithmatex">\([\sigma_{xx}, \sigma_{yy}, \sigma_{zz}, \sigma_{xy}, \sigma_{xz}, \sigma_{yz}]\)</span>.</p>
+<p>In <code>p2g()</code>:
+<div class="highlight"><pre><span></span><code><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w"> </span><span class="n">e</span><span class="o">++</span><span class="p">)</span>
+<span class="w">    </span><span class="n">fi_x</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="n">vol_p</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">sigma</span><span class="p">[</span><span class="mi">0</span><span class="o">*</span><span class="mi">3</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">e</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">grad_w</span><span class="p">[</span><span class="n">e</span><span class="p">];</span>
+<span class="n">grid</span><span class="p">.</span><span class="n">force_int_x</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">fi_x</span><span class="p">;</span>
+</code></pre></div></p>
+<h3 id="44-external-force-mapping">4.4 External Force Mapping</h3>
+<p>Particle-level external forces <span class="arithmatex">\(\mathbf{f}_p\)</span> (arising from LAMMPS pair interactions and applied fixes) are mapped to the grid by the same shape-function quadrature:</p>
+<div class="arithmatex">\[
+\mathbf{f}_i^{\mathrm{ext}} = \sum_p w_{ip} \, \mathbf{f}_p.
+\]</div>
+<p>In <code>p2g()</code>:
+<div class="highlight"><pre><span></span><code><span class="n">grid</span><span class="p">.</span><span class="n">force_ext_x</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">fp</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</code></pre></div></p>
+<h3 id="45-b-bar-volumetric-strain-rate-accumulation">4.5 B-Bar Volumetric Strain Rate Accumulation</h3>
+<p>To suppress volumetric locking in nearly incompressible materials, the B-bar method (Hughes 1980) accumulates a mass-weighted velocity divergence on the grid during P2G:</p>
+<div class="arithmatex">\[
+\hat{d}_i = \sum_p m_p \, \nabla w_{ip} \cdot \tilde{\mathbf{v}}_p(\mathbf{x}_i),
+\]</div>
+<p>where the velocity is evaluated with the APIC affine correction. After ghost exchange, this field is normalized by the nodal mass to yield the smoothed divergence <span class="arithmatex">\(\bar{d}_i = \hat{d}_i / m_i\)</span>, which is broadcast to particles during G2P.</p>
+<p>In <code>p2g()</code>:
+<div class="highlight"><pre><span></span><code><span class="kt">double</span><span class="w"> </span><span class="n">v_dot_grad</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">v_apic_d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vp</span><span class="p">[</span><span class="n">d</span><span class="p">];</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w"> </span><span class="n">e</span><span class="o">++</span><span class="p">)</span>
+<span class="w">        </span><span class="n">v_apic_d</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">Cp</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">d</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">e</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dx_pn</span><span class="p">[</span><span class="n">e</span><span class="p">];</span>
+<span class="w">    </span><span class="n">v_dot_grad</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">v_apic_d</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">grad_w</span><span class="p">[</span><span class="n">d</span><span class="p">];</span>
+<span class="p">}</span>
+<span class="n">grid</span><span class="p">.</span><span class="n">raw_div_v</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">mp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">v_dot_grad</span><span class="p">;</span>
+</code></pre></div></p>
+<hr />
+<h2 id="5-grid-equations-of-motion">5. Grid Equations of Motion</h2>
+<p>After all particle contributions have been accumulated and ghost-node sums have been communicated (reverse MPI exchange), each grid node <span class="arithmatex">\(i\)</span> with non-zero mass is updated by the explicit forward-Euler integration:</p>
+<div class="arithmatex">\[
+m_i \mathbf{v}_i^{n+1} = (m\mathbf{v})_i^n + \Delta t \left( \mathbf{f}_i^{\mathrm{int}} + \mathbf{f}_i^{\mathrm{ext}} \right),
+\]</div>
+<div class="arithmatex">\[
+\mathbf{v}_i^{n+1} = \frac{(m\mathbf{v})_i^n}{m_i} + \frac{\Delta t}{m_i} \left( \mathbf{f}_i^{\mathrm{int}} + \mathbf{f}_i^{\mathrm{ext}} \right).
+\]</div>
+<p>Boundary conditions and multi-body contact corrections are applied to <span class="arithmatex">\(\mathbf{v}_i^{n+1}\)</span> before the G2P step.</p>
+<hr />
+<h2 id="6-grid-to-particle-g2p-transfer">6. Grid-to-Particle (G2P) Transfer</h2>
+<h3 id="61-velocity-update">6.1 Velocity Update</h3>
+<p>The new particle velocity is interpolated from the updated grid velocities:</p>
+<div class="arithmatex">\[
+\mathbf{v}_p^{n+1} = \sum_i w_{ip} \, \mathbf{v}_i^{n+1}.
+\]</div>
+<p>In <code>g2p()</code>:
+<div class="highlight"><pre><span></span><code><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="o">++</span><span class="p">)</span>
+<span class="w">    </span><span class="n">v_new</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">vn</span><span class="p">[</span><span class="n">d</span><span class="p">];</span>
+</code></pre></div></p>
+<h3 id="62-apic-affine-matrix-construction">6.2 APIC Affine Matrix Construction</h3>
+<p>The central operation of the APIC G2P step is the reconstruction of the particle's affine matrix <span class="arithmatex">\(\mathbf{C}_p^{n+1}\)</span>. It is defined as the second moment of the grid velocity field with respect to the particle position, weighted by the shape functions and scaled by the inverse of the particle inertia tensor <span class="arithmatex">\(\mathbf{D}_p^{-1}\)</span>:</p>
+<div class="arithmatex">\[
+\mathbf{C}_p^{n+1} = \left( \sum_i w_{ip} \, \mathbf{v}_i^{n+1} \otimes (\mathbf{x}_i - \mathbf{x}_p) \right) \mathbf{D}_p^{-1}.
+\]</div>
+<p>In index notation:</p>
+<div class="arithmatex">\[
+C_p^{\alpha\beta} = \sum_i w_{ip} \, v_i^\alpha \, (x_i^\beta - x_p^\beta) \, (D_p^{-1})^{\beta\beta},
+\]</div>
+<p>where <span class="arithmatex">\(\mathbf{D}_p^{-1}\)</span> is diagonal for tensor-product grids (see Section 7).</p>
+<p>In <code>g2p()</code>:
+<div class="highlight"><pre><span></span><code><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="o">++</span><span class="p">)</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w"> </span><span class="n">e</span><span class="o">++</span><span class="p">)</span>
+<span class="w">        </span><span class="n">Bp_new</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">d</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">e</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">vn</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dx_pn</span><span class="p">[</span><span class="n">e</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">Dinv</span><span class="p">[</span><span class="n">e</span><span class="p">];</span>
+</code></pre></div></p>
+<p>Here <code>Dinv[e]</code> is <span class="arithmatex">\((D_p^{-1})^{ee}\)</span>, <code>dx_pn[e]</code> <span class="arithmatex">\(= x_i^e - x_p^e\)</span>, and the result is stored directly as the <code>Bp</code> array.</p>
+<h3 id="63-velocity-gradient">6.3 Velocity Gradient</h3>
+<p>The velocity gradient tensor at each particle is computed by the same shape-function interpolation used in the finite-element method:</p>
+<div class="arithmatex">\[
+\mathbf{L}_p = \sum_i \mathbf{v}_i^{n+1} \otimes \nabla w_{ip},
+\qquad
+L_p^{\alpha\beta} = \sum_i v_i^\alpha \, \frac{\partial w_{ip}}{\partial x^\beta}.
+\]</div>
+<p>In <code>g2p()</code>:
+<div class="highlight"><pre><span></span><code><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="o">++</span><span class="p">)</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w"> </span><span class="n">e</span><span class="o">++</span><span class="p">)</span>
+<span class="w">        </span><span class="n">L</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">d</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">e</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">vn</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">grad_w</span><span class="p">[</span><span class="n">e</span><span class="p">];</span>
+</code></pre></div></p>
+<p>This velocity gradient is subsequently used to update the deformation gradient.</p>
+<h3 id="64-b-bar-smoothed-divergence">6.4 B-Bar Smoothed Divergence</h3>
+<p>The nodal smoothed divergence <span class="arithmatex">\(\bar{d}_i\)</span> computed during P2G (Section 4.5) is interpolated back to each particle:</p>
+<div class="arithmatex">\[
+\bar{d}_p = \sum_i w_{ip} \, \bar{d}_i.
+\]</div>
+<p>In <code>g2p()</code>:
+<div class="highlight"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">use_bbar</span><span class="p">)</span>
+<span class="w">    </span><span class="n">dv_smooth</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">grid</span><span class="p">.</span><span class="n">div_v</span><span class="p">[</span><span class="n">n</span><span class="p">];</span>
+</code></pre></div></p>
+<hr />
+<h2 id="7-the-apic-affine-matrix-mathbfc_p-and-angular-momentum-conservation">7. The APIC Affine Matrix <span class="arithmatex">\(\mathbf{C}_p\)</span> and Angular Momentum Conservation</h2>
+<h3 id="71-particle-inertia-tensor-mathbfd_p">7.1 Particle Inertia Tensor <span class="arithmatex">\(\mathbf{D}_p\)</span></h3>
+<p>The APIC formulation requires defining the particle inertia tensor:</p>
+<div class="arithmatex">\[
+\mathbf{D}_p = \sum_i w_{ip} \, (\mathbf{x}_i - \mathbf{x}_p) \otimes (\mathbf{x}_i - \mathbf{x}_p).
+\]</div>
+<p>For a uniform Cartesian grid, <span class="arithmatex">\(\mathbf{D}_p\)</span> is diagonal with entries <span class="arithmatex">\(D_p^{dd} = c_k \, (\Delta x^{(d)})^2\)</span> where the kernel-dependent constant <span class="arithmatex">\(c_k\)</span> is:</p>
+<table>
+<thead>
+<tr>
+<th>Kernel</th>
+<th><span class="arithmatex">\(c_k\)</span></th>
+<th><span class="arithmatex">\(D_p^{dd}\)</span></th>
+<th><span class="arithmatex">\((D_p^{-1})^{dd}\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Linear</td>
+<td><span class="arithmatex">\(\tfrac{1}{4}\)</span></td>
+<td><span class="arithmatex">\(\tfrac{(\Delta x^{(d)})^2}{4}\)</span></td>
+<td><span class="arithmatex">\(\tfrac{4}{(\Delta x^{(d)})^2}\)</span></td>
+</tr>
+<tr>
+<td>Quadratic B-spline</td>
+<td><span class="arithmatex">\(\tfrac{1}{3}\)</span></td>
+<td><span class="arithmatex">\(\tfrac{(\Delta x^{(d)})^2}{3}\)</span></td>
+<td><span class="arithmatex">\(\tfrac{3}{(\Delta x^{(d)})^2}\)</span></td>
+</tr>
+<tr>
+<td>Cubic B-spline</td>
+<td><span class="arithmatex">\(\tfrac{3}{16}\)</span></td>
+<td><span class="arithmatex">\(\tfrac{3(\Delta x^{(d)})^2}{16}\)</span></td>
+<td><span class="arithmatex">\(\tfrac{16}{3(\Delta x^{(d)})^2}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>In <code>coupmpm_kernel.h</code>, <code>D_inverse()</code> computes <code>Dinv[d] = 1.0 / (c * dx_d[d] * dx_d[d])</code> for each kernel type.</p>
+<h3 id="72-angular-momentum-conservation">7.2 Angular Momentum Conservation</h3>
+<p>Jiang et al. (2017) proved that the combined P2G–G2P cycle with affine reconstruction is <strong>exactly</strong> angular momentum conserving under the following consistency condition between the P2G momentum transfer and the G2P affine reconstruction:</p>
+<p>The P2G momentum transfer (Equation in Section 4.2) can be expanded as:</p>
+<div class="arithmatex">\[
+(m\mathbf{v})_i = \sum_p m_p w_{ip} \mathbf{v}_p + \sum_p m_p w_{ip} \mathbf{C}_p (\mathbf{x}_i - \mathbf{x}_p).
+\]</div>
+<p>The G2P velocity reconstruction (Section 6.1) gives:</p>
+<div class="arithmatex">\[
+\mathbf{v}_p^{n+1} = \sum_i w_{ip} \mathbf{v}_i^{n+1},
+\]</div>
+<p>and the G2P affine reconstruction (Section 6.2) gives:</p>
+<div class="arithmatex">\[
+\mathbf{C}_p^{n+1} = \left(\sum_i w_{ip} \, \mathbf{v}_i^{n+1} \otimes (\mathbf{x}_i - \mathbf{x}_p)\right) \mathbf{D}_p^{-1}.
+\]</div>
+<p>The key identity that guarantees angular momentum conservation is:</p>
+<div class="arithmatex">\[
+\sum_p m_p \mathbf{C}_p^{n+1} \mathbf{D}_p = \sum_p m_p \sum_i w_{ip} \mathbf{v}_i^{n+1} \otimes (\mathbf{x}_i - \mathbf{x}_p),
+\]</div>
+<p>which ensures that the affine moment of the particle velocity field exactly reproduces the second moment of the grid velocity field. When used in the subsequent P2G step, this guarantees that the nodal angular momentum <span class="arithmatex">\(\mathbf{L}_i = \sum_p m_p w_{ip} (\mathbf{x}_i - \mathbf{x}_p) \times \tilde{\mathbf{v}}_p(\mathbf{x}_i)\)</span> is preserved through each P2G–G2P cycle without dissipation.</p>
+<p>In contrast, classical PIC (which sets <span class="arithmatex">\(\mathbf{C}_p = \mathbf{0}\)</span>) transfers only translational momentum <span class="arithmatex">\(m_p \mathbf{v}_p\)</span> to the grid, losing all information about the sub-cell angular structure of the velocity field at each transfer step. This causes the well-known angular-momentum dissipation in PIC.</p>
+<hr />
+<h2 id="8-b-bar-volumetric-anti-locking">8. B-Bar Volumetric Anti-Locking</h2>
+<p>The standard MPM velocity gradient <span class="arithmatex">\(\mathbf{L}_p\)</span> from Section 6.3 suffers from volumetric locking when the material is nearly incompressible. The B-bar method corrects the volumetric part of <span class="arithmatex">\(\mathbf{L}_p\)</span> by replacing the local divergence <span class="arithmatex">\(\mathrm{tr}(\mathbf{L}_p)\)</span> with the smoothed nodal divergence <span class="arithmatex">\(\bar{d}_p\)</span> interpolated from the grid:</p>
+<div class="arithmatex">\[
+\bar{\mathbf{L}}_p = \mathbf{L}_p + \frac{\bar{d}_p - \mathrm{tr}(\mathbf{L}_p)}{3} \mathbf{I},
+\]</div>
+<p>where <span class="arithmatex">\(\mathbf{I}\)</span> is the <span class="arithmatex">\(3\times3\)</span> identity tensor. This correction adds a uniform volumetric strain-rate increment to <span class="arithmatex">\(\mathbf{L}_p\)</span> to match the smoothed nodal divergence while leaving the deviatoric part unchanged.</p>
+<p>In <code>update_F_and_stress()</code>:
+<div class="highlight"><pre><span></span><code><span class="kt">double</span><span class="w"> </span><span class="n">tr_L</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Lp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Lp</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Lp</span><span class="p">[</span><span class="mi">8</span><span class="p">];</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">correction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">div_v_s</span><span class="p">[</span><span class="n">p</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">tr_L</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">3.0</span><span class="p">;</span>
+<span class="n">L_bar</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">correction</span><span class="p">;</span>
+<span class="n">L_bar</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">correction</span><span class="p">;</span>
+<span class="n">L_bar</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">correction</span><span class="p">;</span>
+</code></pre></div></p>
+<hr />
+<h2 id="9-deformation-gradient-update">9. Deformation Gradient Update</h2>
+<p>After the B-bar–corrected velocity gradient <span class="arithmatex">\(\bar{\mathbf{L}}_p\)</span> is obtained, the deformation gradient is updated by the multiplicative forward-Euler scheme:</p>
+<div class="arithmatex">\[
+\mathbf{F}_p^{n+1} = \left(\mathbf{I} + \Delta t \, \bar{\mathbf{L}}_p\right) \mathbf{F}_p^n.
+\]</div>
+<p>The current volume is <span class="arithmatex">\(V_p = V_p^0 \, J_p^{n+1}\)</span> with <span class="arithmatex">\(J_p^{n+1} = \det(\mathbf{F}_p^{n+1})\)</span>, and the Cauchy stress <span class="arithmatex">\(\boldsymbol{\sigma}_p^{n+1}\)</span> is then computed from the constitutive model (Neo-Hookean or Mooney-Rivlin) using <span class="arithmatex">\(\mathbf{F}_p^{n+1}\)</span>.</p>
+<p>In <code>update_F_and_stress()</code>:
+<div class="highlight"><pre><span></span><code><span class="n">Mat3</span><span class="o">::</span><span class="n">update_F</span><span class="p">(</span><span class="n">Fp</span><span class="p">,</span><span class="w"> </span><span class="n">L_bar</span><span class="p">,</span><span class="w"> </span><span class="n">dt</span><span class="p">,</span><span class="w"> </span><span class="n">F_new</span><span class="p">);</span><span class="w">  </span><span class="c1">// F_new = (I + dt*L_bar)*F_old</span>
+</code></pre></div></p>
+<hr />
+<h2 id="10-summary-of-the-per-timestep-algorithm">10. Summary of the Per-Timestep Algorithm</h2>
+<p>The complete APIC MPM timestep in CoupMPM proceeds as follows:</p>
+<ol>
+<li><strong>Zero grid</strong>: Reset all nodal fields (<span class="arithmatex">\(m_i\)</span>, <span class="arithmatex">\((m\mathbf{v})_i\)</span>, <span class="arithmatex">\(\mathbf{f}_i^{\mathrm{int}}\)</span>, <span class="arithmatex">\(\mathbf{f}_i^{\mathrm{ext}}\)</span>, <span class="arithmatex">\(\hat{d}_i\)</span>) to zero.</li>
+<li><strong>P2G</strong> (<code>p2g()</code>): For each particle <span class="arithmatex">\(p\)</span> and each node <span class="arithmatex">\(i\)</span> in its support:</li>
+<li>Accumulate mass: <span class="arithmatex">\(m_i \mathrel{+}= w_{ip} m_p\)</span></li>
+<li>Accumulate APIC momentum: <span class="arithmatex">\((m v_\alpha)_i \mathrel{+}= w_{ip} m_p \left(v_p^\alpha + \sum_\beta C_p^{\alpha\beta}(x_i^\beta - x_p^\beta)\right)\)</span></li>
+<li>Accumulate internal force: <span class="arithmatex">\(f_i^{\mathrm{int},\alpha} \mathrel{-}= V_p \sum_\beta \sigma_p^{\alpha\beta} \partial_\beta w_{ip}\)</span></li>
+<li>Accumulate external force: <span class="arithmatex">\(\mathbf{f}_i^{\mathrm{ext}} \mathrel{+}= w_{ip} \mathbf{f}_p\)</span></li>
+<li>(If B-bar) Accumulate raw divergence: <span class="arithmatex">\(\hat{d}_i \mathrel{+}= m_p \nabla w_{ip} \cdot \tilde{\mathbf{v}}_p(\mathbf{x}_i)\)</span></li>
+<li><strong>Reverse MPI exchange</strong>: Sum ghost-node contributions onto owner nodes.</li>
+<li><strong>Grid solve</strong>: Compute <span class="arithmatex">\(\mathbf{v}_i^{n+1} = (m\mathbf{v})_i / m_i + (\Delta t / m_i)(\mathbf{f}_i^{\mathrm{int}} + \mathbf{f}_i^{\mathrm{ext}})\)</span>; normalize B-bar: <span class="arithmatex">\(\bar{d}_i = \hat{d}_i / m_i\)</span>.</li>
+<li><strong>Contact / boundary conditions</strong>: Apply velocity corrections to <span class="arithmatex">\(\mathbf{v}_i^{n+1}\)</span>.</li>
+<li><strong>Forward MPI exchange</strong>: Broadcast <span class="arithmatex">\(\mathbf{v}_i^{n+1}\)</span> and <span class="arithmatex">\(\bar{d}_i\)</span> to ghost nodes.</li>
+<li><strong>G2P</strong> (<code>g2p()</code>): For each particle <span class="arithmatex">\(p\)</span> and each node <span class="arithmatex">\(i\)</span> in its support:</li>
+<li>Interpolate velocity: <span class="arithmatex">\(\mathbf{v}_p^{n+1} \mathrel{+}= w_{ip} \mathbf{v}_i^{n+1}\)</span></li>
+<li>Reconstruct affine matrix: <span class="arithmatex">\(C_p^{\alpha\beta} \mathrel{+}= w_{ip} v_i^\alpha (x_i^\beta - x_p^\beta) (D_p^{-1})^{\beta\beta}\)</span></li>
+<li>Compute velocity gradient: <span class="arithmatex">\(L_p^{\alpha\beta} \mathrel{+}= v_i^\alpha \partial_\beta w_{ip}\)</span></li>
+<li>(If B-bar) Interpolate smoothed divergence: <span class="arithmatex">\(\bar{d}_p \mathrel{+}= w_{ip} \bar{d}_i\)</span></li>
+<li><strong>F and stress update</strong> (<code>update_F_and_stress()</code>): Apply B-bar correction, advance <span class="arithmatex">\(\mathbf{F}_p\)</span>, evaluate constitutive model.</li>
+<li><strong>Particle position update</strong>: <span class="arithmatex">\(\mathbf{x}_p^{n+1} = \mathbf{x}_p^n + \Delta t \, \mathbf{v}_p^{n+1}\)</span>.</li>
+</ol>
+<hr />
+<h2 id="references">References</h2>
+<ul>
+<li>Jiang, C., Schroeder, C., Selle, A., Teran, J., &amp; Stomakhin, A. (2015). The affine particle-in-cell method. <em>ACM Transactions on Graphics</em>, 34(4), 51. https://doi.org/10.1145/2766996</li>
+<li>Jiang, C., Schroeder, C., &amp; Teran, J. (2017). An angular momentum conserving affine-particle-in-cell method. <em>Journal of Computational Physics</em>, 338, 137–164. https://doi.org/10.1016/j.jcp.2017.02.050</li>
+<li>Sulsky, D., Chen, Z., &amp; Schreyer, H. L. (1994). A particle method for history-dependent materials. <em>Computer Methods in Applied Mechanics and Engineering</em>, 118(1–2), 179–196. https://doi.org/10.1016/0045-7825(94)90112-0</li>
+<li>Hughes, T. J. R. (1980). Generalization of selective integration procedures to anisotropic and nonlinear media. <em>International Journal for Numerical Methods in Engineering</em>, 15(9), 1413–1418. https://doi.org/10.1002/nme.1620150914</li>
+<li>Bardenhagen, S. G., Brackbill, J. U., &amp; Sulsky, D. (2000). The material-point method for granular materials. <em>Computer Methods in Applied Mechanics and Engineering</em>, 187(3–4), 529–541. https://doi.org/10.1016/S0045-7825(99)00338-2</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
