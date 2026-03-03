@@ -16,7 +16,7 @@ class NeighList;
 class FixCoupMPMCohesive : public Fix {
 public:
   FixCoupMPMCohesive(class LAMMPS *, int, char **);
-  ~FixCoupMPMCohesive() override = default;
+  ~FixCoupMPMCohesive() override;
 
   int setmask() override;
   void init() override;
