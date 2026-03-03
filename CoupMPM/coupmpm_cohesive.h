@@ -4,6 +4,7 @@
 #include "coupmpm_grid.h"
 #include "coupmpm_kernel.h"
 #include "coupmpm_stress.h"
+#include "neigh_list.h"
 #include "atom.h"
 #include <vector>
 #include <cmath>
@@ -218,9 +219,11 @@ public:
                        double** x, tagint* tag, int* type,
                        tagint* molecule, int* surface,
                        double* F_def, double* vol0,
-                       long step, int dim, double dx)
+                       long step, int dim, double dx,
+                       NeighList* list)
   {
     if (!enabled) return 0;
+    if (!list) return 0;
 
     // Count existing bonds per particle (local only)
     std::vector<int> bond_count(nlocal, 0);
@@ -233,15 +236,24 @@ public:
     }
 
     int n_formed = 0;
-    int ntotal = nlocal + nghost;
 
-    // Scan local surface particles
-    for (int i = 0; i < nlocal; i++) {
+    int inum = list->inum;
+    int *ilist = list->ilist;
+    int *numneigh = list->numneigh;
+    int **firstneigh = list->firstneigh;
+
+    for (int ii = 0; ii < inum; ii++) {
+      int i = ilist[ii];
       if (!surface[i]) continue;
       if (bond_count[i] >= max_bonds_per_particle) continue;
 
-      // Check against all other surface particles (local + ghost)
-      for (int j = i + 1; j < ntotal; j++) {
+      int *jlist = firstneigh[i];
+      int jnum = numneigh[i];
+
+      for (int jj = 0; jj < jnum; jj++) {
+        int j = jlist[jj];
+        j &= NEIGHMASK; // Strip LAMMPS ghost bit flags
+
         if (!surface[j]) continue;
 
         // Must be different bodies
