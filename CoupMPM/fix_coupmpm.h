@@ -34,6 +34,8 @@ public:
   void initial_integrate(int) override;
   void final_integrate() override;
   void end_of_step() override;
+  int pack_exchange(int i, double *buf) override;
+  int unpack_exchange(int nlocal, double *buf) override;
 
   // Temporary per-atom work arrays (not communicated)
   double *L_buffer;    // [nmax * 9] velocity gradient

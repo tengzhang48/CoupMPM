@@ -4,6 +4,7 @@
 #include "coupmpm_grid.h"
 #include "coupmpm_kernel.h"
 #include "coupmpm_stress.h"
+#include "atom.h"
 #include <vector>
 #include <cmath>
 #include <cstring>
@@ -51,8 +52,8 @@ enum class CZLawType {
 // ============================================================
 struct CohesiveBond {
   // --- Identity ---
-  int tag_i;        // global tag of particle i (local owner)
-  int tag_j;        // global tag of particle j (may be ghost)
+  tagint tag_i;     // global tag of particle i (local owner)
+  tagint tag_j;     // global tag of particle j (may be ghost)
   int body_i;       // body (molecule) ID of particle i
   int body_j;       // body (molecule) ID of particle j
   int type_i;       // atom type of i (for type-dependent CZ params)
@@ -102,12 +103,13 @@ struct CZParams {
   double delta_n_max; // failure normal displacement (m)
   double delta_t_max; // failure tangential displacement (m)
   double formation_dist; // bond forms when gap < this (m)
+  double base_rate;   // unstressed off-rate for Bell model (1/time)
 
   CZParams()
     : sigma_max(100.0), tau_max(100.0),
       delta_n(1e-4), delta_t(1e-4),
       delta_n_max(2e-4), delta_t_max(2e-4),
-      formation_dist(5e-4) {}
+      formation_dist(5e-4), base_rate(1.0) {}
 };
 
 // ============================================================
@@ -172,6 +174,7 @@ public:
       p.delta_n_max = dn_max;
       p.delta_t_max = dt_max;
       p.formation_dist = form_dist;
+      p.base_rate = 1.0;
     }
   }
 
@@ -212,8 +215,8 @@ public:
   //   dx: grid spacing (for area estimation)
   // ============================================================
   int detect_new_bonds(int nlocal, int nghost,
-                       double** x, int* tag, int* type,
-                       int* molecule, int* surface,
+                       double** x, tagint* tag, int* type,
+                       tagint* molecule, int* surface,
                        double* F_def, double* vol0,
                        long step, int dim, double dx)
   {
@@ -257,7 +260,7 @@ public:
         if (dist > prm.formation_dist) continue;
 
         // Check no existing bond between this tag pair
-        int ti = tag[i], tj = tag[j];
+        tagint ti = tag[i], tj = tag[j];
         bool exists = false;
         for (const auto& b : bonds) {
           if (!b.active) continue;
@@ -337,29 +340,24 @@ public:
   // tag: global tags (for finding particles)
   // F_def: deformation gradients (for normal update)
   // ============================================================
-  void compute_forces(int nlocal, int nghost,
+  void compute_forces(int /*nlocal*/, int /*nghost*/,
                       double** x, double** f,
-                      int* tag, double* F_def,
-                      int dim, double dt)
+                      tagint* /*tag*/, double* F_def,
+                      int dim, double dt,
+                      Atom *atom_ptr)
   {
     if (!enabled) return;
 
-    int ntotal = nlocal + nghost;
     n_active = 0;
 
     for (auto& bond : bonds) {
       if (!bond.active) continue;
 
-      // Find local indices of particles i and j
-      int li = -1, lj = -1;
-      for (int p = 0; p < ntotal; p++) {
-        if (tag[p] == bond.tag_i) li = p;
-        if (tag[p] == bond.tag_j) lj = p;
-        if (li >= 0 && lj >= 0) break;
-      }
+      // O(1) tag lookup via LAMMPS atom map
+      int li = atom_ptr->map(bond.tag_i);
+      int lj = atom_ptr->map(bond.tag_j);
 
-      // If either particle left this rank entirely (not even ghost),
-      // the bond force can't be computed. Mark for cleanup.
+      // If either particle is not visible on this rank, skip
       if (li < 0 || lj < 0) continue;
 
       n_active++;
@@ -371,36 +369,47 @@ public:
         dist2 += sep[d] * sep[d];
       }
 
-      // --- Update normal using deformation ---
-      // Use the reference normal rotated by the average deformation
-      // of the two particles. For simplicity, use the reference normal
-      // directly — it's adequate when bodies are relatively rigid
-      // (cells, grains). For highly deformable interfaces, update
-      // via Nanson: n = F^{-T} · n0 / |F^{-T} · n0|
+      // --- Update normal using mass-weighted average of Fi and Fj cofactors ---
+      // Nanson: n_deformed ~ cofactor(F) · n0 / |cofactor(F) · n0|
       double normal[3];
-      if (li < nlocal && F_def) {
-        // Nanson update using particle i's deformation gradient
+      if (F_def) {
         const double* Fi = &F_def[li * 9];
-        double J = Mat3::det(Fi);
-        if (std::fabs(J) > 1e-20) {
-          // F^{-T} · n0 via cofactor: cofactor(F) = J * F^{-T}
-          // cofactor row k = cross product of other two rows of F
-          double cof[9];
-          cof[0] = Fi[4]*Fi[8] - Fi[5]*Fi[7];
-          cof[1] = Fi[5]*Fi[6] - Fi[3]*Fi[8];
-          cof[2] = Fi[3]*Fi[7] - Fi[4]*Fi[6];
-          cof[3] = Fi[2]*Fi[7] - Fi[1]*Fi[8];
-          cof[4] = Fi[0]*Fi[8] - Fi[2]*Fi[6];
-          cof[5] = Fi[1]*Fi[6] - Fi[0]*Fi[7];
-          cof[6] = Fi[1]*Fi[5] - Fi[2]*Fi[4];
-          cof[7] = Fi[2]*Fi[3] - Fi[0]*Fi[5];
-          cof[8] = Fi[0]*Fi[4] - Fi[1]*Fi[3];
+        const double* Fj = &F_def[lj * 9];
+        double Ji = Mat3::det(Fi);
+        double Jj = Mat3::det(Fj);
+
+        double cof_i[9], cof_j[9];
+        cof_i[0] = Fi[4]*Fi[8] - Fi[5]*Fi[7];
+        cof_i[1] = Fi[5]*Fi[6] - Fi[3]*Fi[8];
+        cof_i[2] = Fi[3]*Fi[7] - Fi[4]*Fi[6];
+        cof_i[3] = Fi[2]*Fi[7] - Fi[1]*Fi[8];
+        cof_i[4] = Fi[0]*Fi[8] - Fi[2]*Fi[6];
+        cof_i[5] = Fi[1]*Fi[6] - Fi[0]*Fi[7];
+        cof_i[6] = Fi[1]*Fi[5] - Fi[2]*Fi[4];
+        cof_i[7] = Fi[2]*Fi[3] - Fi[0]*Fi[5];
+        cof_i[8] = Fi[0]*Fi[4] - Fi[1]*Fi[3];
+
+        cof_j[0] = Fj[4]*Fj[8] - Fj[5]*Fj[7];
+        cof_j[1] = Fj[5]*Fj[6] - Fj[3]*Fj[8];
+        cof_j[2] = Fj[3]*Fj[7] - Fj[4]*Fj[6];
+        cof_j[3] = Fj[2]*Fj[7] - Fj[1]*Fj[8];
+        cof_j[4] = Fj[0]*Fj[8] - Fj[2]*Fj[6];
+        cof_j[5] = Fj[1]*Fj[6] - Fj[0]*Fj[7];
+        cof_j[6] = Fj[1]*Fj[5] - Fj[2]*Fj[4];
+        cof_j[7] = Fj[2]*Fj[3] - Fj[0]*Fj[5];
+        cof_j[8] = Fj[0]*Fj[4] - Fj[1]*Fj[3];
+
+        if (std::fabs(Ji) > 1e-20 && std::fabs(Jj) > 1e-20) {
+          double mi = atom_ptr->mass[atom_ptr->type[li]];
+          double mj = atom_ptr->mass[atom_ptr->type[lj]];
+          double wtot = mi + mj;
 
           double nm = 0;
           for (int d = 0; d < 3; d++) {
             normal[d] = 0;
             for (int e = 0; e < 3; e++)
-              normal[d] += cof[3*d + e] * bond.n0[e];
+              normal[d] += ((mi * cof_i[3*d + e] + mj * cof_j[3*d + e]) / wtot)
+                           * bond.n0[e];
             nm += normal[d] * normal[d];
           }
           nm = std::sqrt(nm);
@@ -477,10 +486,12 @@ public:
       // --- Apply to particles (Newton's 3rd law) ---
       // Force on i: +force (pulled toward j)
       // Force on j: -force (pulled toward i)
-      if (li < nlocal) {
+      // Apply to ghosts as well; reverse_comm will accumulate ghost
+      // contributions back to their owner ranks.
+      if (li >= 0) {
         f[li][0] += force[0]; f[li][1] += force[1]; f[li][2] += force[2];
       }
-      if (lj < nlocal) {
+      if (lj >= 0) {
         f[lj][0] -= force[0]; f[lj][1] -= force[1]; f[lj][2] -= force[2];
       }
     }
@@ -489,7 +500,8 @@ public:
   // ============================================================
   // Update damage and break failed bonds.
   // ============================================================
-  void update_damage_and_break(int nlocal, double** x, int* tag, int dim)
+  void update_damage_and_break(int /*nlocal*/, double** x, tagint* /*tag*/,
+                               int dim, Atom *atom_ptr)
   {
     if (!enabled) return;
     n_broken_last = 0;
@@ -499,13 +511,9 @@ public:
 
       const CZParams& prm = get_params(bond.type_i, bond.type_j);
 
-      // Find current particles
-      int li = -1, lj = -1;
-      for (int p = 0; p < nlocal; p++) {
-        if (tag[p] == bond.tag_i) li = p;
-        if (tag[p] == bond.tag_j) lj = p;
-        if (li >= 0 && lj >= 0) break;
-      }
+      // O(1) tag lookup via LAMMPS atom map
+      int li = atom_ptr->map(bond.tag_i);
+      int lj = atom_ptr->map(bond.tag_j);
 
       // Check failure criteria
       bool failed = false;
@@ -545,9 +553,9 @@ public:
       }
     }
 
-    // Compact bond list (remove inactive bonds periodically)
-    // Don't compact every step — it's O(N) and bonds breaking is rare
-    if (n_broken_last > 0) {
+    // Compact bond list only periodically to avoid O(N) cost every step.
+    // Inactive bonds accumulate until 100 have broken, then compact once.
+    if (n_broken_last > 100) {
       bonds.erase(
           std::remove_if(bonds.begin(), bonds.end(),
                          [](const CohesiveBond& b) { return !b.active; }),
@@ -579,9 +587,12 @@ public:
     // Normal traction (positive = tension pulling bodies together)
     T_n = (phi_n / p.delta_n) * dn_ratio * exp_n * exp_t;
 
-    // Tangential traction
+    // Tangential traction: -dΦ/dδ_t (negative sign: resists sliding)
+    // d/dδ_t [exp(-δ_t^2/δ_t^2)] = -2*(δ_t/δ_t)/δ_t * exp(...)
+    // Outer minus cancels inner minus → positive magnitude, then negate
+    // to make T_t oppose the slip direction.
     if (std::fabs(delta_t) > 1e-20) {
-      T_t = (phi_n / p.delta_n) * (p.delta_n / p.delta_t)
+      T_t = -(phi_n / p.delta_t)
             * 2.0 * dt_ratio * (1.0 + dn_ratio) * exp_n * exp_t;
     } else {
       T_t = 0.0;
@@ -629,12 +640,11 @@ public:
     // Bell model damage rate: exponential increase with force
     // k_off(F) = k_off_0 * exp(F * x_beta / kT)
     // Simplified: damage_rate = base_rate * exp(alpha * T_mag / sigma_max)
-    double base_rate = 1.0 / (p.delta_n_max / p.delta_n);  // ~1/characteristic_time
     double alpha = 2.0;  // sensitivity to force
     double T_ratio = T_mag / p.sigma_max;
 
     if (T_ratio > 0.5) {
-      double damage_rate = base_rate * std::exp(alpha * (T_ratio - 0.5));
+      double damage_rate = p.base_rate * std::exp(alpha * (T_ratio - 0.5));
       damage += damage_rate * dt;
       if (damage > 1.0) damage = 1.0;
     }
@@ -652,7 +662,7 @@ public:
   // ============================================================
 
   // How many bonds does particle with global tag own?
-  int count_bonds(int gtag) const {
+  int count_bonds(tagint gtag) const {
     int count = 0;
     for (const auto& b : bonds)
       if (b.active && b.tag_i == gtag) count++;
@@ -660,14 +670,17 @@ public:
   }
 
   // Pack all bonds for particle with global tag into buffer.
+  // Uses ubuf union to safely bit-cast 64-bit tagint into double.
   // Returns number of doubles written.
-  int pack_bonds(int gtag, double* buf) const {
+  int pack_bonds(tagint gtag, double* buf) const {
+    // Local union for safe 64-bit integer ↔ double bit-cast
+    union ubuf { double d; tagint t; };
     int m = 0;
     for (const auto& b : bonds) {
       if (!b.active || b.tag_i != gtag) continue;
       // Pack: 25 doubles per bond
-      buf[m++] = (double)b.tag_i;
-      buf[m++] = (double)b.tag_j;
+      ubuf u; u.t = b.tag_i; buf[m++] = u.d;
+      u.t = b.tag_j; buf[m++] = u.d;
       buf[m++] = (double)b.body_i;
       buf[m++] = (double)b.body_j;
       buf[m++] = (double)b.type_i;
@@ -688,11 +701,14 @@ public:
 
   // Unpack bonds from buffer. Returns number of doubles read.
   int unpack_bonds(const double* buf, int nbonds) {
+    // Local union for safe 64-bit integer ↔ double bit-cast
+    union ubuf { double d; tagint t; };
     int m = 0;
     for (int b = 0; b < nbonds; b++) {
       CohesiveBond bond;
-      bond.tag_i = (int)buf[m++];
-      bond.tag_j = (int)buf[m++];
+      ubuf u;
+      u.d = buf[m++]; bond.tag_i = u.t;
+      u.d = buf[m++]; bond.tag_j = u.t;
       bond.body_i = (int)buf[m++];
       bond.body_j = (int)buf[m++];
       bond.type_i = (int)buf[m++];
@@ -714,7 +730,7 @@ public:
 
   // Remove all bonds owned by particle with global tag
   // (called on sending rank after pack)
-  void remove_bonds(int gtag) {
+  void remove_bonds(tagint gtag) {
     bonds.erase(
         std::remove_if(bonds.begin(), bonds.end(),
                        [gtag](const CohesiveBond& b) {
