@@ -206,10 +206,12 @@ public:
               // Apply to per-body velocities
               // impulse_n and impulse_t are impulses (force * dt)
               // Δv = impulse / mass
+              // Use velocity_new (not velocity) so that impulses from multiple
+              // body-pair contacts accumulate correctly when nb >= 3.
               for (int d = 0; d < 3; d++) {
                 double imp_d = impulse_n * normal[d] + impulse_t * tangent[d];
-                ba.velocity_new[d] = ba.velocity[d] + imp_d / ba.mass;
-                bb.velocity_new[d] = bb.velocity[d] - imp_d / bb.mass;
+                ba.velocity_new[d] += imp_d / ba.mass;
+                bb.velocity_new[d] -= imp_d / bb.mass;
               }
             }
           }

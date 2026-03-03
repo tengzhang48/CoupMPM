@@ -931,7 +931,8 @@ inline void update_F_and_stress(
     double* state,          // [nlocal*N_STATE], state vars
     MPMStress& constitutive,
     double dt,
-    bool use_bbar)
+    bool use_bbar,
+    int dim = 3)
 {
   const int nstate = constitutive.n_state_vars();
 
@@ -946,11 +947,23 @@ inline void update_F_and_stress(
     std::memcpy(L_bar, Lp, 9 * sizeof(double));
 
     if (use_bbar && div_v_s) {
-      double tr_L = Lp[0] + Lp[4] + Lp[8];
-      double correction = (div_v_s[p] - tr_L) / 3.0;
-      L_bar[0] += correction;
-      L_bar[4] += correction;
-      L_bar[8] += correction;
+      if (dim == 2) {
+        // In 2D plane-strain, the volumetric correction applies only to the
+        // two in-plane diagonal components.  Dividing by 3 (the 3D formula)
+        // under-corrects, and adding the correction to L_bar[8] (z-z) would
+        // corrupt F_def[8] which must stay 1 under plane-strain.
+        double tr_L = Lp[0] + Lp[4];
+        double correction = (div_v_s[p] - tr_L) / 2.0;
+        L_bar[0] += correction;
+        L_bar[4] += correction;
+        // L_bar[8] (z-z) intentionally left unchanged
+      } else {
+        double tr_L = Lp[0] + Lp[4] + Lp[8];
+        double correction = (div_v_s[p] - tr_L) / 3.0;
+        L_bar[0] += correction;
+        L_bar[4] += correction;
+        L_bar[8] += correction;
+      }
     }
 
     // F_new = (I + dt * L_bar) * F_old

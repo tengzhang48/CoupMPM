@@ -703,11 +703,14 @@ public:
     double k_n = p.sigma_max / p.delta_n;
     double k_t = p.tau_max / p.delta_t;
 
-    T_n = k_n * delta_n;
+    // Cohesive traction resists separation only; compression is handled
+    // by the contact module, not the cohesive zone.
+    T_n = (delta_n > 0.0) ? k_n * delta_n : 0.0;
     T_t = k_t * delta_t;
 
     // Cap at maximum traction
     if (T_n > p.sigma_max) T_n = p.sigma_max;
+    if (T_t > p.tau_max) T_t = p.tau_max;
   }
 
   // ============================================================
