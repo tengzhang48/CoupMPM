@@ -16,6 +16,7 @@
 #include "atom_vec_mpm.h"
 #include "atom.h"
 #include "comm.h"
+#include "domain.h"
 #include "error.h"
 #include "memory.h"
 #include "modify.h"
@@ -161,6 +162,9 @@ void FixCoupMPMAdaptivity::end_of_step()
         atom->mask[n]     = 1;
         atom->image[n]    = atom->image[p];
         atom->molecule[n] = child.body_id;
+        // Remap position and image flags in case the child crossed a
+        // periodic boundary relative to the parent particle.
+        domain->remap(atom->x[n], atom->image[n]);
 
         avec->vol0[n] = child.vol0;
         std::memcpy(avec->F_def[n],   child.F_def,   9 * sizeof(double));

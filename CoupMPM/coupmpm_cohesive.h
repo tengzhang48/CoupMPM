@@ -56,8 +56,8 @@ struct CohesiveBond {
   // --- Identity ---
   tagint tag_i;     // global tag of particle i (local owner)
   tagint tag_j;     // global tag of particle j (may be ghost)
-  int body_i;       // body (molecule) ID of particle i
-  int body_j;       // body (molecule) ID of particle j
+  tagint body_i;       // body (molecule) ID of particle i
+  tagint body_j;       // body (molecule) ID of particle j
   int type_i;       // atom type of i (for type-dependent CZ params)
   int type_j;       // atom type of j
 
@@ -226,14 +226,15 @@ public:
     if (!enabled) return 0;
     if (!list) return 0;
 
-    // Count existing bonds per particle (local only)
+    // Count existing bonds per particle (local only) using a hash map for O(N) lookup
+    std::unordered_map<tagint, int> tag2local;
+    for (int p = 0; p < nlocal; p++) tag2local[tag[p]] = p;
+
     std::vector<int> bond_count(nlocal, 0);
     for (const auto& b : bonds) {
       if (!b.active) continue;
-      // Find local index of particle i (owner)
-      for (int p = 0; p < nlocal; p++) {
-        if (tag[p] == b.tag_i) { bond_count[p]++; break; }
-      }
+      auto it = tag2local.find(b.tag_i);
+      if (it != tag2local.end()) bond_count[it->second]++;
     }
 
     int n_formed = 0;
@@ -356,7 +357,7 @@ public:
   void compute_forces(int nlocal, int nghost,
                       double** x, double** f,
                       tagint* tag, double* F_def,
-                      int dim, double dt,
+                      int dim,
                       Atom *atom_ptr)
   {
     if (!enabled) return;
@@ -484,7 +485,7 @@ public:
           linear_elastic(delta_n, delta_t, prm, T_n, T_t);
           break;
         case CZLawType::RECEPTOR_LIGAND:
-          receptor_ligand(delta_n, delta_t, prm, bond.damage, dt, T_n, T_t);
+          receptor_ligand(delta_n, delta_t, prm, T_n, T_t);
           break;
       }
 
@@ -515,9 +516,10 @@ public:
 
   // ============================================================
   // Update damage and break failed bonds.
+  // dt: current timestep size (used for RECEPTOR_LIGAND damage rate)
   // ============================================================
   void update_damage_and_break(int nlocal, double** x, tagint* tag,
-                               int dim, Atom *atom_ptr)
+                               int dim, Atom *atom_ptr, double dt)
   {
     if (!enabled) return;
     n_broken_last = 0;
@@ -548,18 +550,39 @@ public:
       double effective_ratio = std::sqrt(dn_ratio * dn_ratio + dt_ratio * dt_ratio);
 
       if (effective_ratio > 1.0) {
-        // Beyond characteristic displacement: accumulate damage
+        // Beyond characteristic displacement: accumulate damage.
+        // Use the combined max-displacement ratio as the denominator so
+        // that the formula is consistent with the mixed effective_ratio
+        // numerator (fixes the case where pure shear never reaches D=1
+        // when only the normal max ratio is used for normalization).
         double dn_max_ratio = prm.delta_n_max / prm.delta_n;
-        // Guard against misconfigured params where delta_n_max == delta_n
-        // (would give dn_max_ratio - 1.0 == 0 → division by zero).
-        // 1e-20 matches the J_safe / MASS_TOL convention used throughout
-        // this package for near-zero floating-point guards.
-        double denom = dn_max_ratio - 1.0;
+        double dt_max_ratio = prm.delta_t_max / prm.delta_t;
+        double combined_max_ratio = std::sqrt(dn_max_ratio * dn_max_ratio
+                                            + dt_max_ratio * dt_max_ratio);
+        double denom = combined_max_ratio - 1.0;
         if (std::fabs(denom) < 1e-20)
           bond.damage = 1.0;
         else
           bond.damage = std::min(1.0,
               (effective_ratio - 1.0) / denom);
+      }
+
+      // RECEPTOR_LIGAND: Bell-model damage rate (state update belongs here,
+      // not in compute_forces, so damage is advanced exactly once per step).
+      if (law_type == CZLawType::RECEPTOR_LIGAND) {
+        double k_n = prm.sigma_max / prm.delta_n;
+        double k_t = prm.tau_max / prm.delta_t;
+        double T_n = k_n * bond.delta_max_n;
+        double T_t = k_t * bond.delta_max_t;
+        if (T_n > prm.sigma_max) T_n = prm.sigma_max;
+        double T_mag = std::sqrt(T_n * T_n + T_t * T_t);
+        double alpha = 2.0;
+        double T_ratio = T_mag / prm.sigma_max;
+        if (T_ratio > 0.5) {
+          double damage_rate = prm.base_rate * std::exp(alpha * (T_ratio - 0.5));
+          bond.damage += damage_rate * dt;
+          if (bond.damage > 1.0) bond.damage = 1.0;
+        }
       }
 
       if (bond.damage >= 1.0) failed = true;
@@ -604,7 +627,7 @@ public:
   // ============================================================
 
   // Needleman-Xu (1994): exponential cohesive law
-  // T_n = -(phi_n/delta_n) * exp(-delta_n/delta_n) * (delta_n/delta_n) * exp(-delta_t^2/delta_t^2)
+  // T_n = (phi_n/delta_n) * (δ_n/δ̄_n) * exp(-δ_n/δ̄_n) * exp(-δ_t^2/δ̄_t^2)
   // This is the same law used in the Crook & Homel paper (Eq. 23-24)
   static void needleman_xu(double delta_n, double delta_t,
                            const CZParams& p,
@@ -639,7 +662,9 @@ public:
     // k_n = sigma_max / delta_n (stiffness at peak)
     double k_n = p.sigma_max / p.delta_n;
     double k_t = p.tau_max / p.delta_t;
-    T_n = k_n * delta_n;
+    // Cohesive traction resists separation only; compression is handled
+    // by the contact module, not the cohesive zone.
+    T_n = (delta_n > 0.0) ? k_n * delta_n : 0.0;
     T_t = k_t * delta_t;
   }
 
@@ -653,9 +678,12 @@ public:
   // For deterministic MPM (no Brownian motion), we use a
   // simplified version: damage accumulates proportional to
   // force magnitude above a threshold.
+  //
+  // NOTE: damage is NOT updated here; it is advanced in
+  // update_damage_and_break() so that it is modified exactly
+  // once per timestep, consistent with the other CZ laws.
   static void receptor_ligand(double delta_n, double delta_t,
-                              const CZParams& p, double& damage,
-                              double dt,
+                              const CZParams& p,
                               double& T_n, double& T_t)
   {
     // Linear spring up to sigma_max, then softening
@@ -667,19 +695,6 @@ public:
 
     // Cap at maximum traction
     if (T_n > p.sigma_max) T_n = p.sigma_max;
-    double T_mag = std::sqrt(T_n * T_n + T_t * T_t);
-
-    // Bell model damage rate: exponential increase with force
-    // k_off(F) = k_off_0 * exp(F * x_beta / kT)
-    // Simplified: damage_rate = base_rate * exp(alpha * T_mag / sigma_max)
-    double alpha = 2.0;  // sensitivity to force
-    double T_ratio = T_mag / p.sigma_max;
-
-    if (T_ratio > 0.5) {
-      double damage_rate = p.base_rate * std::exp(alpha * (T_ratio - 0.5));
-      damage += damage_rate * dt;
-      if (damage > 1.0) damage = 1.0;
-    }
   }
 
   // ============================================================
@@ -707,14 +722,15 @@ public:
   int pack_bonds(tagint gtag, double* buf) const {
     // Local union for safe 64-bit integer ↔ double bit-cast
     union ubuf { double d; tagint t; };
+    union lbuf { double d; long l; };
     int m = 0;
     for (const auto& b : bonds) {
       if (!b.active || b.tag_i != gtag) continue;
-      // Pack: 25 doubles per bond
-      ubuf u; u.t = b.tag_i; buf[m++] = u.d;
+      ubuf u; lbuf lb;
+      u.t = b.tag_i; buf[m++] = u.d;
       u.t = b.tag_j; buf[m++] = u.d;
-      buf[m++] = (double)b.body_i;
-      buf[m++] = (double)b.body_j;
+      u.t = b.body_i; buf[m++] = u.d;
+      u.t = b.body_j; buf[m++] = u.d;
       buf[m++] = (double)b.type_i;
       buf[m++] = (double)b.type_j;
       for (int d = 0; d < 3; d++) buf[m++] = b.x0_i[d];
@@ -725,7 +741,7 @@ public:
       buf[m++] = b.damage;
       buf[m++] = b.delta_max_n;
       buf[m++] = b.delta_max_t;
-      buf[m++] = (double)b.step_formed;
+      lb.l = b.step_formed; buf[m++] = lb.d;
     }
     return m;
   }
@@ -735,14 +751,15 @@ public:
   int unpack_bonds(const double* buf, int nbonds) {
     // Local union for safe 64-bit integer ↔ double bit-cast
     union ubuf { double d; tagint t; };
+    union lbuf { double d; long l; };
     int m = 0;
     for (int b = 0; b < nbonds; b++) {
       CohesiveBond bond;
-      ubuf u;
+      ubuf u; lbuf lb;
       u.d = buf[m++]; bond.tag_i = u.t;
       u.d = buf[m++]; bond.tag_j = u.t;
-      bond.body_i = (int)buf[m++];
-      bond.body_j = (int)buf[m++];
+      u.d = buf[m++]; bond.body_i = u.t;
+      u.d = buf[m++]; bond.body_j = u.t;
       bond.type_i = (int)buf[m++];
       bond.type_j = (int)buf[m++];
       for (int d = 0; d < 3; d++) bond.x0_i[d] = buf[m++];
@@ -753,7 +770,7 @@ public:
       bond.damage = buf[m++];
       bond.delta_max_n = buf[m++];
       bond.delta_max_t = buf[m++];
-      bond.step_formed = (long)buf[m++];
+      lb.d = buf[m++]; bond.step_formed = lb.l;
       bond.active = true;
       bonds.push_back(bond);
     }

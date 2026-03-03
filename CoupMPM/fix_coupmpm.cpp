@@ -108,6 +108,7 @@ void FixCoupMPM::parse_args(int narg, char **arg)
       iarg += 2;
     }
     else if (strcmp(arg[iarg], "bbar") == 0) {
+      if (iarg + 1 >= narg) error->all(FLERR, "fix coupmpm: bbar needs argument");
       use_bbar = (strcmp(arg[iarg+1], "yes") == 0);
       iarg += 2;
     }
@@ -138,15 +139,19 @@ void FixCoupMPM::parse_args(int narg, char **arg)
       else error->all(FLERR, "fix coupmpm: unknown constitutive type");
     }
     else if (strcmp(arg[iarg], "dt_auto") == 0) {
+      if (iarg + 1 >= narg) error->all(FLERR, "fix coupmpm: dt_auto needs argument");
       dt_auto = (strcmp(arg[iarg+1], "yes") == 0); iarg += 2;
     }
     else if (strcmp(arg[iarg], "energy_check") == 0) {
+      if (iarg + 1 >= narg) error->all(FLERR, "fix coupmpm: energy_check needs argument");
       energy_check = (strcmp(arg[iarg+1], "yes") == 0); iarg += 2;
     }
     else if (strcmp(arg[iarg], "cfl") == 0) {
+      if (iarg + 1 >= narg) error->all(FLERR, "fix coupmpm: cfl needs argument");
       cfl_factor = atof(arg[iarg+1]); iarg += 2;
     }
     else if (strcmp(arg[iarg], "rho0") == 0) {
+      if (iarg + 1 >= narg) error->all(FLERR, "fix coupmpm: rho0 needs argument");
       rho0 = atof(arg[iarg+1]); iarg += 2;
     }
     // Provide helpful errors for keywords that moved to companion fixes
@@ -193,6 +198,9 @@ void FixCoupMPM::init()
 
   if (grid_dx <= 0 || grid_dy <= 0 || grid_dz <= 0)
     error->all(FLERR, "fix coupmpm: grid spacing must be positive");
+
+  if (rho0 <= 0.0)
+    error->all(FLERR, "fix coupmpm: rho0 must be positive");
 
   if (atom->natoms == 0)
     error->all(FLERR, "fix coupmpm: no atoms defined");
@@ -433,8 +441,15 @@ void FixCoupMPM::final_integrate()
         }
       }
       if (outside && i < (int)p2g_records.size()) {
-        anti_p2g(grid, kernel, p2g_records[i], domain_lo, use_bbar);
-        n_migrated++;
+        // Verify the record matches this atom; guard against mid-step reordering.
+        // If the tags don't match (e.g., after atom->sort()), we skip the anti-P2G
+        // for this atom to avoid subtracting a different particle's contributions.
+        // The migrating particle's contributions remain in the grid for this step,
+        // which introduces a one-step grid residual that is corrected next step.
+        if (p2g_records[i].global_tag == atom->tag[i]) {
+          anti_p2g(grid, kernel, p2g_records[i], domain_lo, use_bbar);
+          n_migrated++;
+        }
       }
     }
 

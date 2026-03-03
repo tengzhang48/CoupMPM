@@ -124,10 +124,10 @@ void FixCoupMPMCohesive::init()
 
   parent->fix_cohesive = this;
 
-  // Register with atom exchange so that cohesive bonds migrate with their
-  // owner particles across processor boundaries.  Without this registration,
-  // pack_exchange / unpack_exchange are never called during Comm::exchange()
-  // and bonds are silently lost in parallel runs.
+  // Ensure idempotent registration: remove any prior callback before
+  // re-registering, so that repeated init() calls don't double-register
+  // and cause pack_exchange/unpack_exchange to be invoked twice per atom.
+  atom->delete_callback(id, 0);
   atom->add_callback(0);
 
   // Request a half neighbor list for bond detection
@@ -172,7 +172,7 @@ void FixCoupMPMCohesive::compute_forces_before_p2g()
   cohesive.compute_forces(
       nlocal, atom->nghost,
       atom->x, atom->f, atom->tag, F_flat,
-      parent->dim, update->dt,
+      parent->dim,
       atom);
 
   // Reverse comm: send ghost forces back to their owning ranks
@@ -209,7 +209,7 @@ void FixCoupMPMCohesive::end_of_step()
 
   // Update damage and break failed bonds (every step)
   cohesive.update_damage_and_break(nlocal, atom->x, atom->tag,
-                                   parent->dim, atom);
+                                   parent->dim, atom, update->dt);
 
   if (comm->me == 0 && screen && cohesive.n_broken_last > 0)
     fprintf(screen,

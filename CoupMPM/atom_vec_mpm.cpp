@@ -30,6 +30,9 @@
 
 using namespace LAMMPS_NS;
 
+// Growth increment for atom arrays — matches the standard LAMMPS convention.
+static constexpr int DELTA = 16384;
+
 /* ---------------------------------------------------------------------- */
 
 AtomVecMPM::AtomVecMPM(LAMMPS *lmp) : AtomVec(lmp)
@@ -53,12 +56,8 @@ AtomVecMPM::AtomVecMPM(LAMMPS *lmp) : AtomVec(lmp)
   // These affect buffer allocation in comm class:
   size_forward = 3;      // x only
   size_reverse = 3;      // f only
-  size_border = 6 + N_MPM_DOUBLES + N_MPM_INTS;
-    // x(3) + tag(1) + type(1) + mask(1) + molecule(1) — wait, standard fields
-    // In traditional LAMMPS, size_border includes everything we pack.
-    // Let me set this properly after understanding what base packs.
-    //
-    // For safety, set generously. These are just buffer-size hints.
+  // x(3) + tag(1) + type(1) + mask(1) + molecule(1) + v(3) = 10 base fields.
+  // For safety, set generously. These are just buffer-size hints.
   size_border = 10 + N_MPM_DOUBLES + N_MPM_INTS;
   size_data_atom = 7;    // id mol type x y z vol0
 
@@ -149,7 +148,13 @@ int AtomVecMPM::unpack_mpm(int i, const double *buf)
 void AtomVecMPM::grow(int n)
 {
   int nmax = atom->nmax;
-  if (n > nmax) nmax = n;
+  if (n == 0) {
+    // Called when nlocal == nmax: grow by a fixed delta to amortize
+    // reallocation cost (standard LAMMPS pattern).
+    nmax += DELTA;
+  } else if (n > nmax) {
+    nmax = n + DELTA;
+  }
 
   // Standard LAMMPS arrays
   tag = memory->grow(atom->tag, nmax, "atom:tag");
@@ -615,8 +620,6 @@ void AtomVecMPM::data_atom(double *coord, imageint imagetmp,
   v[nlocal][0] = 0.0;
   v[nlocal][1] = 0.0;
   v[nlocal][2] = 0.0;
-
-  vol0[nlocal] = utils::numeric(FLERR, values[6], true, lmp);
 
   // Initialize MPM fields (F=I, stress=0, etc.)
   init_mpm_fields(nlocal);
