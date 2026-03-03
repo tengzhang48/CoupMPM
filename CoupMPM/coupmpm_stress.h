@@ -111,7 +111,11 @@ public:
     double b[9];
     Mat3::left_cauchy_green(F, b);
 
-    const double inv_J = 1.0 / J;
+    // Clamp J to avoid division by zero on element inversion.
+    // The pressure term uses the original J (physically meaningful even
+    // for large deformation); only the inversion is guarded.
+    const double J_safe = (J > 1e-20) ? J : 1e-20;
+    const double inv_J = 1.0 / J_safe;
     const double p = kappa * (J - 1.0); // pressure-like term
 
     // σ = (μ/J)(b - I) + κ(J-1)I

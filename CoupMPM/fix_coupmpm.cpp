@@ -158,9 +158,16 @@ void FixCoupMPM::parse_args(int narg, char **arg)
         iarg += 6; // constitutive neohookean mu VAL kappa VAL
       }
       else if (strcmp(arg[iarg+1], "mooneyrivlin") == 0) {
-        stress_model = std::make_unique<MooneyRivlin>(
-            atof(arg[iarg+2]), atof(arg[iarg+3]), atof(arg[iarg+4]));
-        iarg += 5;
+        double C1 = 0, C2 = 0, kappa = 0;
+        for (int k = iarg + 2; k < narg - 1; k++) {
+          if (strcmp(arg[k], "C1") == 0) C1 = atof(arg[k+1]);
+          if (strcmp(arg[k], "C2") == 0) C2 = atof(arg[k+1]);
+          if (strcmp(arg[k], "kappa") == 0) kappa = atof(arg[k+1]);
+        }
+        if (C1 <= 0 || kappa <= 0)
+          error->all(FLERR, "fix coupmpm: mooneyrivlin needs C1 > 0 and kappa > 0");
+        stress_model = std::make_unique<MooneyRivlin>(C1, C2, kappa);
+        iarg += 8; // constitutive mooneyrivlin C1 VAL C2 VAL kappa VAL (8 tokens)
       }
       else error->all(FLERR, "fix coupmpm: unknown constitutive type");
     }
@@ -620,15 +627,14 @@ void FixCoupMPM::end_of_step()
           avec->area0, avec->area_scale);
     }
 
-    // Diagnostic: count surface particles
-    if (comm->me == 0 && screen) {
+    // Diagnostic: count surface particles (MPI_Reduce is collective — all ranks participate)
+    {
       int n_surf = 0;
       for (int i = 0; i < atom->nlocal; i++)
         if (avec->surface[i]) n_surf++;
-      // Reduce across ranks for global count
       int n_surf_global = 0;
       MPI_Reduce(&n_surf, &n_surf_global, 1, MPI_INT, MPI_SUM, 0, world);
-      if (n_surf_global > 0)
+      if (comm->me == 0 && screen && n_surf_global > 0)
         fprintf(screen, "CoupMPM: step %ld, %d surface particles detected\n",
                 step_count, n_surf_global);
     }
