@@ -67,6 +67,7 @@ FixCoupMPM::FixCoupMPM(LAMMPS *lmp, int narg, char **arg)
 
 FixCoupMPM::~FixCoupMPM()
 {
+  if (cohesive.enabled) atom->delete_callback(id, 0);
   memory->destroy(L_buffer);
   memory->destroy(div_v_buf);
   memory->destroy(mass_p);
@@ -253,6 +254,9 @@ void FixCoupMPM::init()
 
   if (atom->natoms == 0)
     error->all(FLERR, "fix coupmpm: no atoms defined");
+
+  // Register pack/unpack_exchange hooks for cohesive bond migration
+  if (cohesive.enabled) atom->add_callback(0);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -437,7 +441,11 @@ void FixCoupMPM::initial_integrate(int /*vflag*/)
     double *F_flat_cz = (nlocal > 0) ? &F_def[0][0] : nullptr;
     cohesive.compute_forces(
         nlocal, atom->nghost,
-        x, f, atom->tag, F_flat_cz, dim, dt);
+        x, f, atom->tag, F_flat_cz, dim, dt,
+        atom);
+    // Reverse comm: send ghost forces back to their owning ranks
+    // so all cohesive contributions are included before P2G.
+    comm->reverse_comm();
   }
 
   // --- Step 1: P2G ---
@@ -762,6 +770,14 @@ void FixCoupMPM::end_of_step()
     // Sort deletions in descending order to avoid index invalidation
     std::sort(to_delete.rbegin(), to_delete.rend());
     for (int del_idx : to_delete) {
+      // Mark any cohesive bonds containing the deleted atom's tag as inactive
+      // to prevent dangling bond references after this particle is removed.
+      if (cohesive.enabled && del_idx < atom->nlocal) {
+        tagint del_tag = atom->tag[del_idx];
+        for (auto& b : cohesive.bonds)
+          if (b.active && (b.tag_i == del_tag || b.tag_j == del_tag))
+            b.active = false;
+      }
       if (del_idx < atom->nlocal - 1)
         avec->copy(atom->nlocal - 1, del_idx, 1);
       atom->nlocal--;
@@ -811,7 +827,7 @@ void FixCoupMPM::end_of_step()
     }
 
     // Update damage and break failed bonds (every step)
-    cohesive.update_damage_and_break(nlocal, atom->x, atom->tag, dim);
+    cohesive.update_damage_and_break(nlocal, atom->x, atom->tag, dim, atom);
 
     if (comm->me == 0 && screen && cohesive.n_broken_last > 0)
       fprintf(screen, "CoupMPM: step %ld, %d cohesive bonds broken, "
@@ -827,4 +843,35 @@ double FixCoupMPM::compute_dt_cfl()
   double c_max = stress_model->wave_speed(rho0);
   double dx_min = std::min(grid_dx, std::min(grid_dy, grid_dz));
   return cfl_factor * dx_min / c_max;
+}
+
+/* ---------------------------------------------------------------------- */
+
+int FixCoupMPM::pack_exchange(int i, double *buf)
+{
+  int m = 0;
+  if (cohesive.enabled) {
+    // Pack number of bonds first (as bit-cast integer) so unpack knows count
+    union ubuf { double d; tagint t; } u;
+    int nbonds = cohesive.count_bonds(atom->tag[i]);
+    u.t = (tagint)nbonds;
+    buf[m++] = u.d;
+    m += cohesive.pack_bonds(atom->tag[i], buf + m);
+    cohesive.remove_bonds(atom->tag[i]);
+  }
+  return m;
+}
+
+/* ---------------------------------------------------------------------- */
+
+int FixCoupMPM::unpack_exchange(int /*nlocal*/, double *buf)
+{
+  int m = 0;
+  if (cohesive.enabled) {
+    union ubuf { double d; tagint t; } u;
+    u.d = buf[m++];
+    int nbonds = (int)u.t;
+    m += cohesive.unpack_bonds(buf + m, nbonds);
+  }
+  return m;
 }
