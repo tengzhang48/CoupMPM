@@ -85,18 +85,23 @@ void FixCoupMPMCohesive::parse_args(int narg, char **arg)
       iarg += 2;
     }
     else if (strcmp(arg[iarg], "sigma") == 0) {
+      if (iarg + 1 >= narg) error->all(FLERR, "fix coupmpm/cohesive: sigma needs argument");
       cz_sigma_tmp = atof(arg[iarg+1]); iarg += 2;
     }
     else if (strcmp(arg[iarg], "delta") == 0) {
+      if (iarg + 1 >= narg) error->all(FLERR, "fix coupmpm/cohesive: delta needs argument");
       cz_delta_tmp = atof(arg[iarg+1]); iarg += 2;
     }
     else if (strcmp(arg[iarg], "delta_max") == 0) {
+      if (iarg + 1 >= narg) error->all(FLERR, "fix coupmpm/cohesive: delta_max needs argument");
       cz_delta_max_tmp = atof(arg[iarg+1]); iarg += 2;
     }
     else if (strcmp(arg[iarg], "form_dist") == 0) {
+      if (iarg + 1 >= narg) error->all(FLERR, "fix coupmpm/cohesive: form_dist needs argument");
       cz_form_dist_tmp = atof(arg[iarg+1]); iarg += 2;
     }
     else if (strcmp(arg[iarg], "interval") == 0) {
+      if (iarg + 1 >= narg) error->all(FLERR, "fix coupmpm/cohesive: interval needs argument");
       cohesive.bond_check_interval = atoi(arg[iarg+1]); iarg += 2;
     }
     else {

@@ -56,12 +56,15 @@ void FixCoupMPMAdaptivity::parse_args(int narg, char **arg)
   int iarg = 3;
   while (iarg < narg) {
     if (strcmp(arg[iarg], "J_split") == 0) {
+      if (iarg + 1 >= narg) error->all(FLERR, "fix coupmpm/adaptivity: J_split needs argument");
       adaptivity.J_split_hi = atof(arg[iarg+1]); iarg += 2;
     }
     else if (strcmp(arg[iarg], "J_merge") == 0) {
+      if (iarg + 1 >= narg) error->all(FLERR, "fix coupmpm/adaptivity: J_merge needs argument");
       adaptivity.J_split_lo = atof(arg[iarg+1]); iarg += 2;
     }
     else if (strcmp(arg[iarg], "interval") == 0) {
+      if (iarg + 1 >= narg) error->all(FLERR, "fix coupmpm/adaptivity: interval needs argument");
       adaptivity.check_interval = atoi(arg[iarg+1]); iarg += 2;
     }
     else {

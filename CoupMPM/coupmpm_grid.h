@@ -101,7 +101,7 @@ public:
     gx = nx + 2 * ghost;
     gy = ny + 2 * ghost;
     gz = (dim == 3) ? (nz + 2 * ghost) : 1;
-    ntotal = gx * gy * gz;
+    ntotal = (int)((long long)gx * gy * gz);
 
     // Allocate primary fields
     mass.assign(ntotal, 0.0);
