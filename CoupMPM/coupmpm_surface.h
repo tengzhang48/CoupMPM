@@ -50,7 +50,7 @@ public:
   // Call AFTER P2G + reverse_comm (so grid.mass is complete).
   // The grid.density field is also populated here.
   void compute_grid_gradient(MPMGrid& grid) {
-    if (!allocated) allocate(grid.ntotal);
+    if (!allocated || grad_rho_x.size() < static_cast<size_t>(grid.ntotal)) allocate(grid.ntotal);
 
     const double cv = grid.cell_volume();
     if (cv < 1e-30) return;
@@ -165,7 +165,7 @@ public:
         continue;
       }
 
-      double gx = 0.0, gy_val = 0.0, gz_val = 0.0;
+      double grad_x = 0.0, gy_val = 0.0, gz_val = 0.0;
 
       for (int k = ilo[2]; k <= ihi[2]; k++) {
         for (int j = ilo[1]; j <= ihi[1]; j++) {
@@ -178,14 +178,14 @@ public:
             if (w < 1e-20) continue;
 
             const int n = grid.idx(i, j, k);
-            gx     += w * grad_rho_x[n];
+            grad_x += w * grad_rho_x[n];
             gy_val += w * grad_rho_y[n];
             gz_val += w * grad_rho_z[n];
           }
         }
       }
 
-      double grad_mag = std::sqrt(gx*gx + gy_val*gy_val + gz_val*gz_val);
+      double grad_mag = std::sqrt(grad_x*grad_x + gy_val*gy_val + gz_val*gz_val);
       surface_flag[p] = (grad_mag > threshold) ? 1 : 0;
     }
   }

@@ -2,6 +2,7 @@
 #define COUPMPM_IO_H
 
 #include "coupmpm_grid.h"
+#include "lmptype.h"
 #include <mpi.h>
 #include <cstdio>
 #include <cstdint>
@@ -154,7 +155,7 @@ public:
   static void write_particle_vtk(int nlocal, int dim,
                                  double** x, double** v,
                                  double* stress_v, double* F_def,
-                                 int* molecule, int* surface_flag,
+                                 tagint* molecule, int* surface_flag,
                                  MPI_Comm comm,
                                  long step, const std::string& prefix)
   {
@@ -235,7 +236,7 @@ public:
     // Body ID
     if (molecule) {
       fprintf(fp, "        <DataArray type=\"Int32\" Name=\"body_id\" format=\"ascii\">\n");
-      for (int i = 0; i < nlocal; i++) fprintf(fp, "%d\n", molecule[i]);
+      for (int i = 0; i < nlocal; i++) fprintf(fp, "%ld\n", (long)molecule[i]);
       fprintf(fp, "        </DataArray>\n");
     }
 

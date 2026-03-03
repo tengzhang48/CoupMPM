@@ -265,7 +265,6 @@ private:
   // Reverse comm in one dimension: ghost_lo → neigh_lo, ghost_hi → neigh_hi
   // Neighbor accumulates into their interior face.
   void reverse_dim(MPMGrid& g, int d) {
-    const int gd = (d == 0) ? g.gx : (d == 1) ? g.gy : g.gz;
     const int gh = g.ghost;
 
     if (is_self_periodic(d)) {
@@ -306,7 +305,6 @@ private:
 
   // Forward comm in one dimension
   void forward_dim(MPMGrid& g, int d) {
-    const int gd = (d == 0) ? g.gx : (d == 1) ? g.gy : g.gz;
     const int gh = g.ghost;
 
     if (is_self_periodic(d)) {
