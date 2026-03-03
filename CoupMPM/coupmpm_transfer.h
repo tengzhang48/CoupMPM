@@ -32,7 +32,7 @@ namespace Tags {
 // ============================================================
 struct P2GRecord {
   int local_idx;     // local atom index at P2G time
-  int global_tag;    // global atom tag (robust against atom sorting)
+  tagint global_tag; // global atom tag (robust against atom sorting)
   tagint body_id;       // molecule ID (for Bardenhagen)
   double xp[3];      // position at P2G time
   double vp[3];      // velocity
@@ -458,6 +458,28 @@ private:
       g.force_ext_y[in_] += g.force_ext_y[gn];
       g.force_ext_z[in_] += g.force_ext_z[gn];
       g.raw_div_v[in_]   += g.raw_div_v[gn];
+      if (g.contact_bardenhagen) {
+        const int base_gn = gn * MAX_BODIES_PER_NODE;
+        const int base_in = in_ * MAX_BODIES_PER_NODE;
+        for (int bg = 0; bg < g.num_bodies[gn]; bg++) {
+          tagint inc_id = g.body_data[base_gn + bg].body_id;
+          bool found = false;
+          for (int bi = 0; bi < g.num_bodies[in_]; bi++) {
+            if (g.body_data[base_in + bi].body_id == inc_id) {
+              g.body_data[base_in + bi].mass += g.body_data[base_gn + bg].mass;
+              g.body_data[base_in + bi].momentum[0] += g.body_data[base_gn + bg].momentum[0];
+              g.body_data[base_in + bi].momentum[1] += g.body_data[base_gn + bg].momentum[1];
+              g.body_data[base_in + bi].momentum[2] += g.body_data[base_gn + bg].momentum[2];
+              found = true; break;
+            }
+          }
+          if (!found && g.num_bodies[in_] < MAX_BODIES_PER_NODE) {
+            int nb = g.num_bodies[in_];
+            g.body_data[base_in + nb] = g.body_data[base_gn + bg]; // copy struct
+            g.num_bodies[in_]++;
+          }
+        }
+      }
     });
   }
 
@@ -635,7 +657,7 @@ inline int p2g(MPMGrid& grid,
                const double domain_lo[3],
                bool use_bbar,
                std::vector<P2GRecord>* records = nullptr,
-               int* tags = nullptr)  // global atom tags for record robustness
+               tagint* tags = nullptr)  // global atom tags for record robustness
 {
   const double dx_d[3] = {grid.dx, grid.dy, grid.dz};
   double Dinv[3];
