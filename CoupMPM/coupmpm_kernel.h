@@ -80,7 +80,7 @@ public:
   int support() const {
     switch (type) {
       case KernelType::LINEAR:   return 1;  // nodes at -1..+1 from nearest
-      case KernelType::BSPLINE2: return 2;  // nodes at -1..+1 from nearest, but support is 1.5
+      case KernelType::BSPLINE2: return 2;  // support 1.5 cells; ceiling is 2
       case KernelType::BSPLINE3: return 2;  // nodes at -2..+1 from floor
     }
     return 2;
@@ -111,7 +111,7 @@ public:
   // For uniform grids, D is diagonal: D_dd = dx_d^2 * c
   // where c depends on kernel type.
   // D_inv = 1 / (dx_d^2 * c)
-  void D_inverse(double dx_d[3], int dim, double Dinv[3]) const {
+  void D_inverse(const double dx_d[3], int dim, double Dinv[3]) const {
     double c;
     switch (type) {
       case KernelType::LINEAR:   c = 1.0 / 4.0;  break;  // D = dx^2/4

@@ -135,8 +135,8 @@ public:
         }
 
     // Threshold: |∇ρ| > α * ρ_max / dx_min
-    const double dx_min = std::min(grid.dx, std::min(grid.dy,
-                          (grid.dim == 3) ? grid.dz : grid.dy));
+    double dx_min = std::min(grid.dx, grid.dy);
+    if (grid.dim == 3) dx_min = std::min(dx_min, grid.dz);
 
     // Global rho_max across all ranks for consistent threshold
     double global_rho_max = local_rho_max;

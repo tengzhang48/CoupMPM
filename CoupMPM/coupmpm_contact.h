@@ -116,13 +116,6 @@ public:
             }
           }
 
-          // Center-of-mass velocity (already computed in grid solve)
-          const double vcm[3] = {
-            grid.velocity_new_x[n],
-            grid.velocity_new_y[n],
-            grid.velocity_new_z[n]
-          };
-
           // For each body pair, detect contact and apply
           for (int a = 0; a < nb; a++) {
             for (int b = a + 1; b < nb; b++) {

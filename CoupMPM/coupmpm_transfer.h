@@ -661,7 +661,7 @@ inline int p2g(MPMGrid& grid,
 {
   const double dx_d[3] = {grid.dx, grid.dy, grid.dz};
   double Dinv[3];
-  kernel.D_inverse(const_cast<double*>(dx_d), grid.dim, Dinv);
+  kernel.D_inverse(dx_d, grid.dim, Dinv);
 
   int count = 0;
   for (int p = 0; p < nlocal; p++) {
@@ -817,7 +817,7 @@ inline void g2p(const MPMGrid& grid,
 {
   const double dx_d[3] = {grid.dx, grid.dy, grid.dz};
   double Dinv[3];
-  kernel.D_inverse(const_cast<double*>(dx_d), grid.dim, Dinv);
+  kernel.D_inverse(dx_d, grid.dim, Dinv);
 
   for (int p = 0; p < nlocal; p++) {
     const double xp[3] = {x[p][0], x[p][1], x[p][2]};
