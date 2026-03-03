@@ -226,15 +226,21 @@ public:
     if (!enabled) return 0;
     if (!list) return 0;
 
-    // Count existing bonds per particle (local only) using a hash map for O(N) lookup
-    std::unordered_map<tagint, int> tag2local;
-    for (int p = 0; p < nlocal; p++) tag2local[tag[p]] = p;
-
-    std::vector<int> bond_count(nlocal, 0);
+    // Count existing bonds per particle tag (covers both local and ghost).
+    // Each bond increments both tag_i and tag_j so each particle's bond
+    // endpoint count is tracked correctly for max_bonds_per_particle enforcement.
+    std::unordered_map<tagint, int> tag_bond_count;
     for (const auto& b : bonds) {
       if (!b.active) continue;
-      auto it = tag2local.find(b.tag_i);
-      if (it != tag2local.end()) bond_count[it->second]++;
+      tag_bond_count[b.tag_i]++;
+      tag_bond_count[b.tag_j]++;
+    }
+
+    // Build local tag-to-index for bond_count vector initialization
+    std::vector<int> bond_count(nlocal, 0);
+    for (int p = 0; p < nlocal; p++) {
+      auto it = tag_bond_count.find(tag[p]);
+      if (it != tag_bond_count.end()) bond_count[p] = it->second;
     }
 
     int n_formed = 0;
@@ -286,8 +292,12 @@ public:
         }
         if (exists) continue;
 
-        // Check j's bond count (if j is local)
-        if (j < nlocal && bond_count[j] >= max_bonds_per_particle) continue;
+        // Check j's bond count using tag-based lookup (covers local and ghost j)
+        {
+          auto it = tag_bond_count.find(tag[j]);
+          if (it != tag_bond_count.end() &&
+              it->second >= max_bonds_per_particle) continue;
+        }
 
         // --- Create bond ---
         CohesiveBond bond;
@@ -325,6 +335,8 @@ public:
 
         bonds.push_back(bond);
         bond_count[i]++;
+        tag_bond_count[ti]++;
+        tag_bond_count[tj]++;
         n_formed++;
       }
     }
@@ -639,15 +651,16 @@ public:
     const double exp_n = std::exp(-dn_ratio);
     const double exp_t = std::exp(-dt_ratio * dt_ratio);
 
-    // Normal traction (positive = tension pulling bodies together)
+    // Normal traction (positive = tension pulling bodies together).
+    // Clamp to zero for compression: contact handles compressive stress.
     T_n = (phi_n / p.delta_n) * dn_ratio * exp_n * exp_t;
+    if (delta_n < 0.0) T_n = 0.0;
 
-    // Tangential traction: -dΦ/dδ_t (negative sign: resists sliding)
-    // d/dδ_t [exp(-δ_t^2/δ_t^2)] = -2*(δ_t/δ_t)/δ_t * exp(...)
-    // Outer minus cancels inner minus → positive magnitude, then negate
-    // to make T_t oppose the slip direction.
+    // Tangential traction: resists sliding in the direction of slip.
+    // T_t > 0 causes force = T_t * tangent on particle i (toward j tangentially)
+    // and -T_t * tangent on particle j (restoring), which correctly opposes slip.
     if (std::fabs(delta_t) > 1e-20) {
-      T_t = -(phi_n / p.delta_t)
+      T_t = (phi_n / p.delta_t)
             * 2.0 * dt_ratio * (1.0 + dn_ratio) * exp_n * exp_t;
     } else {
       T_t = 0.0;

@@ -336,15 +336,14 @@ void FixCoupMPM::initial_integrate(int /*vflag*/)
       mass_p[i] = atom->mass[atom->type[i]];
   }
 
-  // Auto timestep
+  // Auto timestep: always update dt to the CFL-stable value so the
+  // timestep can both decrease and recover as the simulation evolves.
   if (dt_auto) {
     double dt_cfl = compute_dt_cfl();
-    if (dt_cfl < update->dt) {
-      if (comm->me == 0 && screen)
-        fprintf(screen, "CoupMPM: CFL dt=%.4e < current dt=%.4e\n",
-                dt_cfl, update->dt);
-      update->dt = dt_cfl;
-    }
+    if (comm->me == 0 && screen && dt_cfl != update->dt)
+      fprintf(screen, "CoupMPM: CFL dt=%.4e (was %.4e)\n",
+              dt_cfl, update->dt);
+    update->dt = dt_cfl;
   }
 
   double **F_def    = avec->F_def;

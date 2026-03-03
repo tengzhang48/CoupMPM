@@ -129,32 +129,22 @@ public:
               for (int d = 0; d < 3; d++)
                 dv[d] = ba.velocity[d] - bb.velocity[d];
 
-              // Normal direction: use mass-weighted center-of-mass offset
-              // between the two bodies at this node. This gives a GEOMETRIC
-              // normal independent of kinematics, unlike relative velocity
-              // which collapses the normal/tangential decomposition.
-              //
-              // COM offset: n_ab ∝ (x_cm_a - x_cm_b) projected through
-              // the per-body momentum direction. For grid-based contact,
-              // the proper normal is the gradient of the body's mass field.
-              // As a robust approximation, use the difference of per-body
-              // momentum directions (which encode spatial distribution).
+              // Normal direction: use center-of-mass offset between the two bodies.
+              // COM_a = ba.com / ba.mass (accumulated as sum(w*m*x)/m_node_body)
+              // n_ab = (COM_a - COM_b) / |COM_a - COM_b|
+              // This is the Bardenhagen (2000) geometric normal — independent of
+              // kinematics and correctly resolves the contact interface direction.
               double normal[3];
               double nm = 0.0;
 
-              // Use per-body momentum direction difference as normal proxy
-              // This works because momentum = mass * velocity encodes both
-              // the spatial mass distribution and kinematics.
               for (int d = 0; d < 3; d++) {
-                normal[d] = ba.momentum[d] / (ba.mass + MASS_TOL)
-                          - bb.momentum[d] / (bb.mass + MASS_TOL);
-                // Fall back: if bodies have similar velocity, use the
-                // relative velocity direction (better than nothing)
+                normal[d] = ba.com[d] / (ba.mass + MASS_TOL)
+                          - bb.com[d] / (bb.mass + MASS_TOL);
               }
               nm = std::sqrt(normal[0]*normal[0] + normal[1]*normal[1]
                            + normal[2]*normal[2]);
 
-              // If momentum-based normal is degenerate, try relative velocity
+              // If COM-based normal is degenerate, fall back to relative velocity
               if (nm < 1e-15) {
                 for (int d = 0; d < 3; d++) normal[d] = dv[d];
                 nm = std::sqrt(normal[0]*normal[0] + normal[1]*normal[1]

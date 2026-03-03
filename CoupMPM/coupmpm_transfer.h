@@ -142,6 +142,9 @@ inline void anti_p2g(MPMGrid& grid,
             bd->momentum[0] -= w * rec.mp * va0;
             bd->momentum[1] -= w * rec.mp * va1;
             bd->momentum[2] -= w * rec.mp * va2;
+            bd->com[0] -= w * rec.mp * rec.xp[0];
+            bd->com[1] -= w * rec.mp * rec.xp[1];
+            bd->com[2] -= w * rec.mp * rec.xp[2];
           }
         }
       }
@@ -213,8 +216,9 @@ public:
       if (fs > mf) mf = fs;
     }
     // Buffer for the larger of reverse and forward
+    // Per body in reverse: body_id(1) + mass(1) + momentum(3) + com(3) = 8 doubles
     int n_rev = N_REVERSE_FIELDS;
-    if (grid.contact_bardenhagen) n_rev += MAX_BODIES_PER_NODE * 5;
+    if (grid.contact_bardenhagen) n_rev += MAX_BODIES_PER_NODE * 8;
     int max_fields = (n_rev > N_FORWARD_FIELDS)
                      ? n_rev : N_FORWARD_FIELDS;
     max_buf = static_cast<size_t>(max_fields) * mf;
@@ -274,7 +278,7 @@ private:
     if (neigh[d][0] == MPI_PROC_NULL && neigh[d][1] == MPI_PROC_NULL) return;
 
     int n_rev = N_REVERSE_FIELDS;
-    if (g.contact_bardenhagen) n_rev += MAX_BODIES_PER_NODE * 5;
+    if (g.contact_bardenhagen) n_rev += MAX_BODIES_PER_NODE * 8;
     const size_t bs = static_cast<size_t>(n_rev) * ghost_face_size(g, d);
     if (!bs) return;
     assert(bs <= max_buf);
@@ -367,12 +371,16 @@ private:
             buf[c++] = bd.momentum[0];
             buf[c++] = bd.momentum[1];
             buf[c++] = bd.momentum[2];
+            buf[c++] = bd.com[0];
+            buf[c++] = bd.com[1];
+            buf[c++] = bd.com[2];
           } else {
+            // Sentinel: no body at this slot. Pack 8 zeros:
+            // body_id(-1) + mass(1) + momentum(3) + com(3)
             ubuf u; u.t = -1; buf[c++] = u.d;
-            buf[c++] = 0.0;
-            buf[c++] = 0.0;
-            buf[c++] = 0.0;
-            buf[c++] = 0.0;
+            buf[c++] = 0.0;  // mass
+            buf[c++] = 0.0; buf[c++] = 0.0; buf[c++] = 0.0;  // momentum
+            buf[c++] = 0.0; buf[c++] = 0.0; buf[c++] = 0.0;  // com
           }
         }
       }
@@ -402,7 +410,7 @@ private:
         for (int b = 0; b < MAX_BODIES_PER_NODE; b++) {
           ubuf u; u.d = buf[c++]; tagint incoming_id = u.t;
           if (incoming_id == -1) {
-            c += 4;
+            c += 7;  // skip mass(1) + momentum(3) + com(3)
             continue;
           }
           double in_mass = buf[c++];
@@ -410,6 +418,10 @@ private:
           in_mom[0] = buf[c++];
           in_mom[1] = buf[c++];
           in_mom[2] = buf[c++];
+          double in_com[3];
+          in_com[0] = buf[c++];
+          in_com[1] = buf[c++];
+          in_com[2] = buf[c++];
 
           // Match incoming body to existing local body entries
           bool found = false;
@@ -419,6 +431,9 @@ private:
               g.body_data[base + k].momentum[0] += in_mom[0];
               g.body_data[base + k].momentum[1] += in_mom[1];
               g.body_data[base + k].momentum[2] += in_mom[2];
+              g.body_data[base + k].com[0] += in_com[0];
+              g.body_data[base + k].com[1] += in_com[1];
+              g.body_data[base + k].com[2] += in_com[2];
               found = true;
               break;
             }
@@ -431,6 +446,9 @@ private:
             g.body_data[base + nb].momentum[0] = in_mom[0];
             g.body_data[base + nb].momentum[1] = in_mom[1];
             g.body_data[base + nb].momentum[2] = in_mom[2];
+            g.body_data[base + nb].com[0] = in_com[0];
+            g.body_data[base + nb].com[1] = in_com[1];
+            g.body_data[base + nb].com[2] = in_com[2];
             g.num_bodies[n]++;
           }
         }
@@ -470,6 +488,9 @@ private:
               g.body_data[base_in + bi].momentum[0] += g.body_data[base_gn + bg].momentum[0];
               g.body_data[base_in + bi].momentum[1] += g.body_data[base_gn + bg].momentum[1];
               g.body_data[base_in + bi].momentum[2] += g.body_data[base_gn + bg].momentum[2];
+              g.body_data[base_in + bi].com[0] += g.body_data[base_gn + bg].com[0];
+              g.body_data[base_in + bi].com[1] += g.body_data[base_gn + bg].com[1];
+              g.body_data[base_in + bi].com[2] += g.body_data[base_gn + bg].com[2];
               found = true; break;
             }
           }
@@ -653,7 +674,7 @@ inline int p2g(MPMGrid& grid,
                double* F_def,       // deformation gradient [nlocal * 9]
                double* stress_v,    // Cauchy stress Voigt [nlocal * 6]
                double* Bp,          // APIC affine matrix [nlocal * 9]
-               int* molecule,       // body ID [nlocal] (for Bardenhagen)
+               tagint* molecule,       // body ID [nlocal] (for Bardenhagen)
                const double domain_lo[3],
                bool use_bbar,
                std::vector<P2GRecord>* records = nullptr,
@@ -673,7 +694,7 @@ inline int p2g(MPMGrid& grid,
     const double* sp = &stress_v[p * 6];
     const double* Cp = &Bp[p * 9]; // APIC affine matrix (C_p = Bp * Dinv already applied? No, Bp IS the affine matrix)
     const double J = Mat3::det(Fp);
-    const double vol_p = vol0[p] * J;
+    const double vol_p = vol0[p] * std::fabs(J);
 
     // Full Cauchy stress tensor from Voigt
     // [xx, yy, zz, xy, xz, yz] → 3x3
@@ -770,7 +791,7 @@ inline int p2g(MPMGrid& grid,
             grid.raw_div_v[n] += mp * v_dot_grad;
           }
 
-          // Bardenhagen: per-body accumulation
+          // Bardenhagen: per-body accumulation including center of mass
           if (grid.contact_bardenhagen && molecule) {
             NodeBodyData* bd = grid.find_or_add_body(n, molecule[p]);
             if (bd) {
@@ -784,6 +805,10 @@ inline int p2g(MPMGrid& grid,
               bd->momentum[0] += w * mp * v_apic_0;
               bd->momentum[1] += w * mp * v_apic_1;
               bd->momentum[2] += w * mp * v_apic_2;
+              // Center-of-mass accumulator: sum(w * m_p * x_p)
+              bd->com[0] += w * mp * xp[0];
+              bd->com[1] += w * mp * xp[1];
+              bd->com[2] += w * mp * xp[2];
             }
           }
         }
