@@ -269,7 +269,7 @@ $$\mathbf{L}_m = \frac{m_i \mathbf{x}_i + m_j \mathbf{x}_j}{m_i + m_j} \times (m
 
 Expanding and grouping terms:
 
-$$\mathbf{L}_m = m_i \, \mathbf{x}_i \times \mathbf{v}_i + m_j \, \mathbf{x}_j \times \mathbf{v}_j - \frac{m_i m_j}{m_i + m_j} (\mathbf{x}_i - \mathbf{x}_j) \times (\mathbf{v}_i - \mathbf{v}_j). \tag{16}$$
+$$ \mathbf{L}_m = m_i \, \mathbf{x}_i \times \mathbf{v}_i + m_j \, \mathbf{x}_j \times \mathbf{v}_j - \frac{m_i m_j}{m_i + m_j} (\mathbf{x}_i - \mathbf{x}_j) \times (\mathbf{v}_i - \mathbf{v}_j). \qquad (16) $$
 
 The residual (last term) vanishes exactly when either the two particles are co-located
 ($\mathbf{x}_i = \mathbf{x}_j$)
