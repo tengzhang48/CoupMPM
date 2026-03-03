@@ -199,7 +199,7 @@ void AtomVecMPM::grow_pointers()
 
 void AtomVecMPM::copy(int i, int j, int delflag)
 {
-  // Copy atom j's data to position i (used when atoms are deleted/sorted)
+  // Copy atom i's data to position j (used when atoms are deleted/sorted)
 
   tag[j] = tag[i];
   type[j] = type[i];

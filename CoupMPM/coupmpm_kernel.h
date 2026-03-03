@@ -114,9 +114,10 @@ public:
   void D_inverse(double dx_d[3], int dim, double Dinv[3]) const {
     double c;
     switch (type) {
-      case KernelType::LINEAR:   c = 1.0 / 4.0; break;  // D = dx^2/4
-      case KernelType::BSPLINE2: c = 1.0 / 3.0; break;  // D = dx^2/3
+      case KernelType::LINEAR:   c = 1.0 / 4.0;  break;  // D = dx^2/4
+      case KernelType::BSPLINE2: c = 1.0 / 3.0;  break;  // D = dx^2/3
       case KernelType::BSPLINE3: c = 3.0 / 16.0; break;  // D = 3dx^2/16
+      default:                   c = 1.0 / 3.0;  break;  // safe fallback
     }
     for (int d = 0; d < dim; d++)
       Dinv[d] = 1.0 / (c * dx_d[d] * dx_d[d]);

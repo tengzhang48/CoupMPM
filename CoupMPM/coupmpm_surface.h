@@ -139,9 +139,10 @@ public:
                           (grid.dim == 3) ? grid.dz : grid.dy));
 
     // Global rho_max across all ranks for consistent threshold
-    double global_rho_max = 0.0;
-    MPI_Allreduce(&local_rho_max, &global_rho_max, 1, MPI_DOUBLE,
-                  MPI_MAX, comm_world);
+    double global_rho_max = local_rho_max;
+    if (comm_world != MPI_COMM_NULL)
+      MPI_Allreduce(&local_rho_max, &global_rho_max, 1, MPI_DOUBLE,
+                    MPI_MAX, comm_world);
 
     const double threshold = alpha * global_rho_max / dx_min;
 

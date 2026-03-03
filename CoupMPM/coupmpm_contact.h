@@ -99,12 +99,20 @@ public:
 
           const int base = n * MAX_BODIES_PER_NODE;
 
-          // Compute per-body velocities
+          // Compute per-body velocities and pre-initialize velocity_new.
+          // velocity_new is initialised to the pre-contact velocity so that
+          // the reconstruction step below can always use velocity_new without
+          // a special "was this body contacted?" check.  The contact loop
+          // below overwrites velocity_new only for bodies that actually
+          // exchange an impulse, but even a zero post-contact velocity is
+          // handled correctly because the initial value is velocity, not 0.
           for (int b = 0; b < nb; b++) {
             NodeBodyData& bd = grid.body_data[base + b];
             if (bd.mass > MASS_TOL) {
-              for (int d = 0; d < 3; d++)
+              for (int d = 0; d < 3; d++) {
                 bd.velocity[d] = bd.momentum[d] / bd.mass;
+                bd.velocity_new[d] = bd.velocity[d];
+              }
             }
           }
 
@@ -223,26 +231,17 @@ public:
             }
           }
 
-          // Reconstruct total node velocity from per-body
-          double vn_x = 0, vn_y = 0, vn_z = 0;
-          bool any_contact = false;
-          for (int b = 0; b < nb; b++) {
-            NodeBodyData& bd = grid.body_data[base + b];
-            bool has_new = (bd.velocity_new[0] != 0 ||
-                           bd.velocity_new[1] != 0 ||
-                           bd.velocity_new[2] != 0);
-            if (has_new) {
-              any_contact = true;
+          // Reconstruct total node velocity from per-body post-contact velocities.
+          // velocity_new was pre-initialized to velocity above, so it is always
+          // valid regardless of whether the post-contact value is zero.
+          if (grid.mass[n] > MASS_TOL) {
+            double vn_x = 0, vn_y = 0, vn_z = 0;
+            for (int b = 0; b < nb; b++) {
+              NodeBodyData& bd = grid.body_data[base + b];
               vn_x += bd.mass * bd.velocity_new[0];
               vn_y += bd.mass * bd.velocity_new[1];
               vn_z += bd.mass * bd.velocity_new[2];
-            } else {
-              vn_x += bd.mass * bd.velocity[0];
-              vn_y += bd.mass * bd.velocity[1];
-              vn_z += bd.mass * bd.velocity[2];
             }
-          }
-          if (any_contact && grid.mass[n] > MASS_TOL) {
             grid.velocity_new_x[n] = vn_x / grid.mass[n];
             grid.velocity_new_y[n] = vn_y / grid.mass[n];
             grid.velocity_new_z[n] = vn_z / grid.mass[n];
