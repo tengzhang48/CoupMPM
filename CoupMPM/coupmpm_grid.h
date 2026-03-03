@@ -1,6 +1,7 @@
 #ifndef COUPMPM_GRID_H
 #define COUPMPM_GRID_H
 
+#include "lmptype.h"
 #include <vector>
 #include <cstring>
 #include <cmath>
@@ -22,7 +23,7 @@ static constexpr double MASS_TOL = 1e-20;
 
 // Per-body data on a single grid node (for multi-velocity contact)
 struct NodeBodyData {
-  int body_id;
+  tagint body_id;
   double mass;
   double momentum[3];
   double velocity[3];
@@ -272,7 +273,7 @@ public:
 
   // Find or add a body on a node (for Bardenhagen contact)
   // Returns pointer to NodeBodyData, or nullptr if MAX exceeded
-  NodeBodyData* find_or_add_body(int node_idx, int bid) {
+  NodeBodyData* find_or_add_body(int node_idx, tagint bid) {
     assert(contact_bardenhagen);
     const int base = node_idx * MAX_BODIES_PER_NODE;
     const int nb = num_bodies[node_idx];
