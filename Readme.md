@@ -284,9 +284,7 @@ The following issues are known and deferred for future development:
 
 | Issue | Impact | Recommended Fix |
 |---|---|---|
-| Bardenhagen `NodeBodyData` not included in `reverse_comm` | Multi-rank contact misses ghost-node contributions; incorrect impulses near subdomain boundaries | Defer per-body velocity computation to owned nodes after `reverse_comm` |
 | `grad-rho` field not forward-communicated | Ghost nodes carry zero density gradient; particles near subdomain boundaries may be misclassified as interior | Add a `forward_comm` pass for `grad_rho_x/y/z` |
-| Per-type mass limits particle adaptivity | Split child particles revert to the full per-type mass from the LAMMPS type table, breaking mass conservation | Switch to per-atom `rmass` (`mass_type = 0`) for simulations with heavy splitting |
 | No reference-configuration cohesive zones | Cohesive adhesion is range-limited to within one grid cell | Implement the Crook–Homel reference-configuration method (Phase 2) |
 
 ---
@@ -327,7 +325,7 @@ The following issues are known and deferred for future development:
 
 2. **APIC affine matrix**: `Bp` stores **C**_p. The APIC velocity contribution at a node is `v_p + C_p · (x_node − x_p)`. `D_inv` is applied during G2P, not during P2G.
 
-3. **Ghost exchange completeness**: The reverse communication must include all P2G accumulation fields: mass, momentum, `force_int`, `force_ext`, and `raw_div_v`.
+3. **Ghost exchange completeness**: The reverse communication includes all P2G accumulation fields: mass, momentum, `force_int`, `force_ext`, `raw_div_v`, and — when Bardenhagen contact is active — the per-body `NodeBodyData` (mass, momentum, and centre-of-mass per body per node).
 
 4. **Contact normal must be geometric**: Using Δv / |Δv| as the contact normal collapses the normal/tangential decomposition. The momentum-direction difference between bodies provides a kinematics-independent geometric normal.
 
