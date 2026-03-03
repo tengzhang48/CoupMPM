@@ -419,7 +419,7 @@ void FixCoupMPM::final_integrate()
   update_F_and_stress(
       nlocal, F_flat, stress_flat,
       L_buffer, use_bbar ? div_v_buf : nullptr,
-      state_flat, *stress_model, dt, use_bbar);
+      state_flat, *stress_model, dt, use_bbar, dim);
 
   // --- Step 5c: Update positions ---
   for (int i = 0; i < nlocal; i++) {

@@ -227,6 +227,7 @@ void FixCoupMPMAdaptivity::end_of_step()
     std::memcpy(avec->Bp[i],      merged.Bp,       9 * sizeof(double));
     std::memcpy(avec->mpm_state[i],merged.state,
                 AtomVecMPM::N_STATE * sizeof(double));
+    parent->mass_p[i] = merged.mass;
 
     to_delete.push_back(j);
     n_merges++;
