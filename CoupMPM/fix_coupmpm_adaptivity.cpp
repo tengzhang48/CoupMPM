@@ -146,6 +146,7 @@ void FixCoupMPMAdaptivity::end_of_step()
         std::memcpy(avec->Bp[p],      child.Bp,       9 * sizeof(double));
         std::memcpy(avec->mpm_state[p],child.state,
                     AtomVecMPM::N_STATE * sizeof(double));
+        parent->mass_p[p] = child.mass;
         first = false;
       } else {
         // Create new atom at end of local array
@@ -179,7 +180,7 @@ void FixCoupMPMAdaptivity::end_of_step()
         avec->area0[n][0]    = avec->area0[n][1] = avec->area0[n][2] = 0.0;
         avec->area_scale[n]  = 0.0;
 
-        parent->mass_p[n] = parent->mass_p[p];
+        parent->mass_p[n] = child.mass;
 
         atom->nlocal++;
       }
@@ -247,7 +248,8 @@ void FixCoupMPMAdaptivity::end_of_step()
   if (n_splits > 0 || n_merges > 0) {
     atom->tag_extend();
     atom->natoms = 0;
-    MPI_Allreduce(&atom->nlocal, &atom->natoms, 1,
+    bigint nlocal_big = atom->nlocal;
+    MPI_Allreduce(&nlocal_big, &atom->natoms, 1,
                   MPI_LMP_BIGINT, MPI_SUM, world);
     if (atom->map_style != Atom::MAP_NONE) {
       atom->map_init();

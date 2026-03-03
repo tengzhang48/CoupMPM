@@ -28,6 +28,7 @@ struct NodeBodyData {
   double momentum[3];
   double velocity[3];
   double velocity_new[3];
+  double com[3];   // mass-weighted center-of-mass accumulator (sum of m*x)
 
   void zero() {
     body_id = -1;
@@ -35,6 +36,7 @@ struct NodeBodyData {
     std::memset(momentum, 0, sizeof(momentum));
     std::memset(velocity, 0, sizeof(velocity));
     std::memset(velocity_new, 0, sizeof(velocity_new));
+    std::memset(com, 0, sizeof(com));
   }
 };
 

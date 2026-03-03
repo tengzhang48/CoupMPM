@@ -81,7 +81,7 @@ public:
     switch (type) {
       case KernelType::LINEAR:   return 1;  // nodes at -1..+1 from nearest
       case KernelType::BSPLINE2: return 2;  // support 1.5 cells; ceiling is 2
-      case KernelType::BSPLINE3: return 2;  // nodes at -2..+1 from floor
+      case KernelType::BSPLINE3: return 3;  // support [-2, 2]; ceiling matches ghost_width
     }
     return 2;
   }
