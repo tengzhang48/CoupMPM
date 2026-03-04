@@ -114,10 +114,16 @@ public:
   void D_inverse(const double dx_d[3], int dim, double Dinv[3]) const {
     double c;
     switch (type) {
-      case KernelType::LINEAR:   c = 1.0 / 4.0;  break;  // D = dx^2/4
-      case KernelType::BSPLINE2: c = 1.0 / 3.0;  break;  // D = dx^2/3
-      case KernelType::BSPLINE3: c = 3.0 / 16.0; break;  // D = 3dx^2/16
-      default:                   c = 1.0 / 3.0;  break;  // safe fallback
+      case KernelType::LINEAR:
+        // WARNING: D = h^2*alpha*(1-alpha) is position-dependent for linear kernels.
+        // Using cell-center value h^2/4 as approximation (per Jiang et al. 2015).
+        // Angular momentum is NOT exactly conserved with this approximation.
+        // Use BSPLINE2 or BSPLINE3 for proper APIC.
+        c = 1.0 / 4.0;
+        break;
+      case KernelType::BSPLINE2: c = 1.0 / 4.0;  break;  // D = h^2/4 (Jiang et al. 2015, Table 1)
+      case KernelType::BSPLINE3: c = 1.0 / 3.0;  break;  // D = h^2/3 (Jiang et al. 2015, Table 1)
+      default:                   c = 1.0 / 4.0;  break;
     }
     for (int d = 0; d < dim; d++)
       Dinv[d] = 1.0 / (c * dx_d[d] * dx_d[d]);
