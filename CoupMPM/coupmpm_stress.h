@@ -90,9 +90,10 @@ public:
 };
 
 // ============================================================
-// Neo-Hookean hyperelastic:
-//   ψ = μ/2 (I₁ - 3 - 2 ln J) + κ/2 (J - 1)²
-//   σ = (μ/J)(b - I) + κ(J-1)I
+// Neo-Hookean hyperelastic (decoupled formulation):
+//   ψ = μ/2 (J^{-2/3} I₁ - 3) + κ/2 (J - 1)²
+//   σ = (μ/J) J^{-2/3} dev(b) + κ(J-1)I
+// where dev(b) = b - tr(b)/3 · I (isochoric deviatoric)
 //
 // Parameters: μ (shear modulus), κ (bulk modulus)
 // ============================================================
@@ -111,34 +112,56 @@ public:
     double b[9];
     Mat3::left_cauchy_green(F, b);
 
-    // Clamp J to avoid division by zero on element inversion.
-    // The pressure term uses the original J (physically meaningful even
-    // for large deformation); only the inversion is guarded.
-    const double J_safe = (J > 1e-20) ? J : 1e-20;
-    const double inv_J = 1.0 / J_safe;
-    const double p = kappa * (J - 1.0); // pressure-like term
+    // Detect element inversion: J <= 0 means the element has
+    // flipped orientation. The deviatoric stress (μ/J terms)
+    // becomes singular and physically meaningless.
+    // Apply only a strong volumetric penalty to push J back
+    // toward positive values.
+    if (J <= 0.0) {
+      // Recovery pressure: κ * (J - 1) is already large and negative
+      // for J < 0, providing a strong expansion force.
+      double p = kappa * (J - 1.0);
+      stress_out[0] = p;   // xx
+      stress_out[1] = p;   // yy
+      stress_out[2] = p;   // zz
+      stress_out[3] = 0.0; // xy
+      stress_out[4] = 0.0; // xz
+      stress_out[5] = 0.0; // yz
+      return;
+    }
 
-    // σ = (μ/J)(b - I) + κ(J-1)I
+    const double inv_J = 1.0 / J;
+    const double p = kappa * (J - 1.0);
+
+    // Decoupled Neo-Hookean: isochoric deviatoric + volumetric
+    // b_bar = J^{-2/3} * b  (isochoric left Cauchy-Green)
+    // dev(b_bar) = b_bar - tr(b_bar)/3 * I
+    // σ_dev = μ/J * dev(b_bar)
+    // σ = σ_dev + p * I
+    const double Jm23 = 1.0 / std::cbrt(J * J);
+    const double tr_b = b[0] + b[4] + b[8];
+    const double tr_bbar_over_3 = Jm23 * tr_b / 3.0;
+
     // Voigt: [xx, yy, zz, xy, xz, yz]
-    stress_out[0] = mu * inv_J * (b[0] - 1.0) + p; // xx
-    stress_out[1] = mu * inv_J * (b[4] - 1.0) + p; // yy
-    stress_out[2] = mu * inv_J * (b[8] - 1.0) + p; // zz
-    stress_out[3] = mu * inv_J * b[1];              // xy = (b_01 + b_10)/2, but b is symmetric
-    stress_out[4] = mu * inv_J * b[2];              // xz
-    stress_out[5] = mu * inv_J * b[5];              // yz
+    stress_out[0] = mu * inv_J * (Jm23 * b[0] - tr_bbar_over_3) + p; // xx
+    stress_out[1] = mu * inv_J * (Jm23 * b[4] - tr_bbar_over_3) + p; // yy
+    stress_out[2] = mu * inv_J * (Jm23 * b[8] - tr_bbar_over_3) + p; // zz
+    stress_out[3] = mu * inv_J * Jm23 * b[1];                         // xy
+    stress_out[4] = mu * inv_J * Jm23 * b[2];                         // xz
+    stress_out[5] = mu * inv_J * Jm23 * b[5];                         // yz
   }
 
   double compute_energy(const double F[9], double J,
                         const double /*state*/[]) override {
+    if (J <= 0.0) {
+      // Only volumetric penalty energy for inverted elements
+      return 0.5 * kappa * (J - 1.0) * (J - 1.0);
+    }
     double b[9];
     Mat3::left_cauchy_green(F, b);
     const double I1 = b[0] + b[4] + b[8];
-    // J should always be positive for valid deformation.
-    // If J ≤ 0, the element has inverted — log is undefined.
-    // Clamp to small positive value for robustness.
-    const double J_safe = (J > 1e-20) ? J : 1e-20;
-    const double lnJ = std::log(J_safe);
-    return 0.5 * mu * (I1 - 3.0 - 2.0 * lnJ)
+    const double Jm23 = 1.0 / std::cbrt(J * J);
+    return 0.5 * mu * (Jm23 * I1 - 3.0)
          + 0.5 * kappa * (J - 1.0) * (J - 1.0);
   }
 
