@@ -1,6 +1,7 @@
 #ifndef COUPMPM_ADAPTIVITY_H
 #define COUPMPM_ADAPTIVITY_H
 
+#include "atom_vec_mpm.h"
 #include "coupmpm_grid.h"
 #include "coupmpm_stress.h"
 #include <vector>
@@ -70,7 +71,7 @@ struct ChildParticle {
   double F_def[9];
   double stress_v[6];
   double Bp[9];
-  double state[9];   // matches N_STATE in atom_vec_mpm
+  double state[AtomVecMPM::N_STATE];   // matches N_STATE in atom_vec_mpm
   int body_id;
   int type;
 };
@@ -192,10 +193,9 @@ public:
           std::memcpy(c.stress_v, stress_p, 6 * sizeof(double));
           std::memcpy(c.Bp, Bp_p, 9 * sizeof(double));
 
-          int ncopy = (n_state < 9) ? n_state : 9;
-          std::memset(c.state, 0, 9 * sizeof(double));
-          if (state_p && ncopy > 0)
-            std::memcpy(c.state, state_p, ncopy * sizeof(double));
+          std::memset(c.state, 0, AtomVecMPM::N_STATE * sizeof(double));
+          if (state_p)
+            std::memcpy(c.state, state_p, AtomVecMPM::N_STATE * sizeof(double));
 
           c.body_id = body_id;
           c.type = type;
@@ -330,10 +330,9 @@ public:
     for (int k = 0; k < 9; k++)
       merged.Bp[k] = (mass_i * Bp_i[k] + mass_j * Bp_j[k]) * inv_m;
 
-    int ncopy = (n_state < 9) ? n_state : 9;
-    std::memset(merged.state, 0, 9 * sizeof(double));
-    if (st_keep && ncopy > 0)
-      std::memcpy(merged.state, st_keep, ncopy * sizeof(double));
+    std::memset(merged.state, 0, AtomVecMPM::N_STATE * sizeof(double));
+    if (st_keep)
+      std::memcpy(merged.state, st_keep, AtomVecMPM::N_STATE * sizeof(double));
 
     merged.body_id = body_id;
     merged.type = type;
