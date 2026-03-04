@@ -6,6 +6,8 @@
 #include <cstring>
 #include <cmath>
 #include <cassert>
+#include <stdexcept>
+#include <string>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -16,7 +18,8 @@ namespace CoupMPM {
 
 // Maximum bodies tracked per node for Bardenhagen contact.
 // Most nodes see 1 body; interface nodes see 2-3.
-// If exceeded, extra bodies are silently dropped (with warning).
+// If exceeded, find_or_add_body throws std::runtime_error to prevent
+// silent momentum conservation violations.
 static constexpr int MAX_BODIES_PER_NODE = 4;
 
 static constexpr double MASS_TOL = 1e-20;
@@ -291,7 +294,14 @@ public:
     }
 
     // Add new
-    if (nb >= MAX_BODIES_PER_NODE) return nullptr;
+    if (nb >= MAX_BODIES_PER_NODE)
+      throw std::runtime_error(
+        std::string("CoupMPM: MAX_BODIES_PER_NODE (") +
+        std::to_string(MAX_BODIES_PER_NODE) +
+        ") exceeded at grid node " + std::to_string(node_idx) +
+        ". Increase MAX_BODIES_PER_NODE in coupmpm_grid.h or reduce "
+        "the number of simultaneous bodies sharing a node. "
+        "Silently dropping a body would violate momentum conservation.");
     body_data[base + nb].zero();
     body_data[base + nb].body_id = bid;
     num_bodies[node_idx] = nb + 1;

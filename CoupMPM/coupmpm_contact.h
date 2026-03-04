@@ -116,7 +116,11 @@ public:
             }
           }
 
-          // For each body pair, detect contact and apply
+          // NOTE: Gauss-Seidel pairwise contact is mildly order-dependent for nb >= 3.
+          // TODO (Phase 2): replace with center-of-mass target velocity (Bardenhagen 2000)
+          // which handles multi-body contact without ordering artifacts:
+          //   v_cm = sum(m_b * v_b) / sum(m_b);
+          //   for each body b: if (v_b - v_cm) . n < 0, set v_b_new = v_cm along normal.
           for (int a = 0; a < nb; a++) {
             for (int b = a + 1; b < nb; b++) {
               NodeBodyData& ba = grid.body_data[base + a];
@@ -124,10 +128,13 @@ public:
 
               if (ba.mass < MASS_TOL || bb.mass < MASS_TOL) continue;
 
-              // Relative velocity
+              // Relative velocity (Gauss-Seidel): use iteratively updated velocity_new
+              // so each pair sees the accumulated effect of previous contact impulses.
+              // For nb == 2 this is identical to the original because velocity_new
+              // was initialized to velocity. For nb >= 3, this prevents overshoot.
               double dv[3];
               for (int d = 0; d < 3; d++)
-                dv[d] = ba.velocity[d] - bb.velocity[d];
+                dv[d] = ba.velocity_new[d] - bb.velocity_new[d];
 
               // Normal direction: use center-of-mass offset between the two bodies.
               // COM_a = ba.com / ba.mass (accumulated as sum(w*m*x)/m_node_body)
