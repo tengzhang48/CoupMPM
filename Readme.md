@@ -61,8 +61,9 @@ For complete **Syntax & Keyword Reference**, **Theory**, and **Extended Examples
 > **[https://tengzhang48.github.io/CoupMPM](https://tengzhang48.github.io/CoupMPM)**
 
 The documentation includes:
+- [User Guide](https://tengzhang48.github.io/CoupMPM/user_guide/) — overview of the user guide section
 - [Keywords & Syntax](https://tengzhang48.github.io/CoupMPM/keywords/) — all fix commands, keyword tables, and extended examples
-- Theory Manual — APIC, B-bar, Bardenhagen contact, and dynamic cohesive zones
+- [Theory Manual](https://tengzhang48.github.io/CoupMPM/theory/) — APIC, B-bar, Bardenhagen contact, and dynamic cohesive zones
 - [Architecture](https://tengzhang48.github.io/CoupMPM/architecture/) — source layout, companion fix design, and key physics notes
 - [Implementation Status](https://tengzhang48.github.io/CoupMPM/status/) — known limitations, completion status, and validation roadmap
 
