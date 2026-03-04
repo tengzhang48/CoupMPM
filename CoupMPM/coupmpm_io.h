@@ -36,115 +36,98 @@ public:
 
     const int Nx = grid.Nx, Ny = grid.Ny;
     const int Nz = (grid.dim == 3) ? grid.Nz : 1;
-    const size_t ntot = (size_t)Nx * Ny * Nz;
 
     const int nlx = grid.nx, nly = grid.ny;
     const int nlz = (grid.dim == 3) ? grid.nz : 1;
-    const int nlocal = nlx * nly * nlz;
 
-    // Pack local interior data
-    std::vector<double> l_mass(nlocal), l_vx(nlocal), l_vy(nlocal), l_vz(nlocal);
-    std::vector<double> l_density(nlocal);
-    int c = 0;
+    const int ox = grid.offset[0];
+    const int oy = grid.offset[1];
+    const int oz = (grid.dim == 3) ? grid.offset[2] : 0;
+
+    // Each rank writes its own local piece
+    char fname[512];
+    snprintf(fname, sizeof(fname), "%s_grid_%06ld_r%d.vti", prefix.c_str(), step, rank);
+    FILE* fp = fopen(fname, "w");
+    if (!fp) return;
+
+    fprintf(fp, "<?xml version=\"1.0\"?>\n");
+    fprintf(fp, "<VTKFile type=\"ImageData\" version=\"1.0\" byte_order=\"LittleEndian\">\n");
+    fprintf(fp, "  <ImageData WholeExtent=\"0 %d 0 %d 0 %d\" "
+                "Origin=\"%.8e %.8e %.8e\" "
+                "Spacing=\"%.8e %.8e %.8e\">\n",
+            Nx, Ny, Nz, domain_lo[0], domain_lo[1], domain_lo[2],
+            grid.dx, grid.dy, grid.dz);
+    fprintf(fp, "    <Piece Extent=\"%d %d %d %d %d %d\">\n",
+            ox, ox + nlx, oy, oy + nly, oz, oz + nlz);
+    fprintf(fp, "      <CellData>\n");
+
+    fprintf(fp, "        <DataArray type=\"Float64\" Name=\"mass\" format=\"ascii\">\n");
+    for (int k = 0; k < nlz; k++)
+      for (int j = 0; j < nly; j++)
+        for (int i = 0; i < nlx; i++)
+          fprintf(fp, "%.8e\n", grid.mass[grid.lidx(i, j, k)]);
+    fprintf(fp, "        </DataArray>\n");
+
+    fprintf(fp, "        <DataArray type=\"Float64\" Name=\"velocity\" "
+                "NumberOfComponents=\"3\" format=\"ascii\">\n");
     for (int k = 0; k < nlz; k++)
       for (int j = 0; j < nly; j++)
         for (int i = 0; i < nlx; i++) {
           const int n = grid.lidx(i, j, k);
-          l_mass[c]    = grid.mass[n];
-          l_vx[c]      = grid.velocity_new_x[n];
-          l_vy[c]      = grid.velocity_new_y[n];
-          l_vz[c]      = grid.velocity_new_z[n];
-          l_density[c] = grid.density[n];
-          c++;
+          fprintf(fp, "%.8e %.8e %.8e\n",
+                  grid.velocity_new_x[n], grid.velocity_new_y[n], grid.velocity_new_z[n]);
         }
+    fprintf(fp, "        </DataArray>\n");
 
-    // Gather metadata and data to rank 0 (same pattern as CoupLB)
-    int local_info[6] = {grid.offset[0], grid.offset[1],
-                         (grid.dim == 3) ? grid.offset[2] : 0,
-                         nlx, nly, nlz};
+    fprintf(fp, "        <DataArray type=\"Float64\" Name=\"density\" format=\"ascii\">\n");
+    for (int k = 0; k < nlz; k++)
+      for (int j = 0; j < nly; j++)
+        for (int i = 0; i < nlx; i++)
+          fprintf(fp, "%.8e\n", grid.density[grid.lidx(i, j, k)]);
+    fprintf(fp, "        </DataArray>\n");
+
+    fprintf(fp, "      </CellData>\n");
+    fprintf(fp, "    </Piece>\n");
+    fprintf(fp, "  </ImageData>\n");
+    fprintf(fp, "</VTKFile>\n");
+    fclose(fp);
+
+    // Gather piece extents to rank 0 for master .pvti file
+    int local_info[6] = {ox, oy, oz, nlx, nly, nlz};
     std::vector<int> all_info(nprocs * 6);
     MPI_Gather(local_info, 6, MPI_INT, all_info.data(), 6, MPI_INT, 0, comm);
 
-    std::vector<int> counts(nprocs), displs(nprocs);
-    MPI_Gather(&nlocal, 1, MPI_INT, counts.data(), 1, MPI_INT, 0, comm);
-
     if (rank == 0) {
-      displs[0] = 0;
-      for (int r = 1; r < nprocs; r++)
-        displs[r] = displs[r-1] + counts[r-1];
-    }
+      char pvti_name[512];
+      snprintf(pvti_name, sizeof(pvti_name), "%s_grid_%06ld.pvti", prefix.c_str(), step);
+      FILE* pf = fopen(pvti_name, "w");
+      if (!pf) return;
 
-    int total_gathered = 0;
-    if (rank == 0)
-      for (int r = 0; r < nprocs; r++) total_gathered += counts[r];
-
-    std::vector<double> g_mass, g_vx, g_vy, g_vz, g_density;
-    if (rank == 0) {
-      g_mass.resize(total_gathered);
-      g_vx.resize(total_gathered); g_vy.resize(total_gathered); g_vz.resize(total_gathered);
-      g_density.resize(total_gathered);
-    }
-
-    MPI_Gatherv(l_mass.data(), nlocal, MPI_DOUBLE, g_mass.data(), counts.data(), displs.data(), MPI_DOUBLE, 0, comm);
-    MPI_Gatherv(l_vx.data(), nlocal, MPI_DOUBLE, g_vx.data(), counts.data(), displs.data(), MPI_DOUBLE, 0, comm);
-    MPI_Gatherv(l_vy.data(), nlocal, MPI_DOUBLE, g_vy.data(), counts.data(), displs.data(), MPI_DOUBLE, 0, comm);
-    MPI_Gatherv(l_vz.data(), nlocal, MPI_DOUBLE, g_vz.data(), counts.data(), displs.data(), MPI_DOUBLE, 0, comm);
-    MPI_Gatherv(l_density.data(), nlocal, MPI_DOUBLE, g_density.data(), counts.data(), displs.data(), MPI_DOUBLE, 0, comm);
-
-    if (rank == 0) {
-      std::vector<double> mass(ntot,0), vx(ntot,0), vy(ntot,0), vz(ntot,0), dens(ntot,0);
-
-      for (int r = 0; r < nprocs; r++) {
-        const int ox = all_info[r*6+0], oy = all_info[r*6+1], oz = all_info[r*6+2];
-        const int rnx = all_info[r*6+3], rny = all_info[r*6+4], rnz = all_info[r*6+5];
-        const int base = displs[r];
-        int idx = 0;
-        for (int k = 0; k < rnz; k++)
-          for (int j = 0; j < rny; j++)
-            for (int i = 0; i < rnx; i++) {
-              const size_t gn = (size_t)(ox+i) + (size_t)Nx * ((size_t)(oy+j) + (size_t)Ny * (oz+k));
-              mass[gn] = g_mass[base+idx];
-              vx[gn]   = g_vx[base+idx];
-              vy[gn]   = g_vy[base+idx];
-              vz[gn]   = g_vz[base+idx];
-              dens[gn] = g_density[base+idx];
-              idx++;
-            }
-      }
-
-      char fname[512];
-      snprintf(fname, sizeof(fname), "%s_grid_%06ld.vti", prefix.c_str(), step);
-      FILE* fp = fopen(fname, "w");
-      if (!fp) return;
-
-      fprintf(fp, "<?xml version=\"1.0\"?>\n");
-      fprintf(fp, "<VTKFile type=\"ImageData\" version=\"1.0\" byte_order=\"LittleEndian\">\n");
-      fprintf(fp, "  <ImageData WholeExtent=\"0 %d 0 %d 0 %d\" "
+      fprintf(pf, "<?xml version=\"1.0\"?>\n");
+      fprintf(pf, "<VTKFile type=\"PImageData\" version=\"1.0\" byte_order=\"LittleEndian\">\n");
+      fprintf(pf, "  <PImageData WholeExtent=\"0 %d 0 %d 0 %d\" GhostLevel=\"0\" "
                   "Origin=\"%.8e %.8e %.8e\" "
                   "Spacing=\"%.8e %.8e %.8e\">\n",
               Nx, Ny, Nz, domain_lo[0], domain_lo[1], domain_lo[2],
               grid.dx, grid.dy, grid.dz);
-      fprintf(fp, "    <Piece Extent=\"0 %d 0 %d 0 %d\">\n", Nx, Ny, Nz);
-      fprintf(fp, "      <CellData>\n");
-
-      fprintf(fp, "        <DataArray type=\"Float64\" Name=\"mass\" format=\"ascii\">\n");
-      for (size_t n = 0; n < ntot; n++) fprintf(fp, "%.8e\n", mass[n]);
-      fprintf(fp, "        </DataArray>\n");
-
-      fprintf(fp, "        <DataArray type=\"Float64\" Name=\"velocity\" "
-                  "NumberOfComponents=\"3\" format=\"ascii\">\n");
-      for (size_t n = 0; n < ntot; n++) fprintf(fp, "%.8e %.8e %.8e\n", vx[n], vy[n], vz[n]);
-      fprintf(fp, "        </DataArray>\n");
-
-      fprintf(fp, "        <DataArray type=\"Float64\" Name=\"density\" format=\"ascii\">\n");
-      for (size_t n = 0; n < ntot; n++) fprintf(fp, "%.8e\n", dens[n]);
-      fprintf(fp, "        </DataArray>\n");
-
-      fprintf(fp, "      </CellData>\n");
-      fprintf(fp, "    </Piece>\n");
-      fprintf(fp, "  </ImageData>\n");
-      fprintf(fp, "</VTKFile>\n");
-      fclose(fp);
+      fprintf(pf, "    <PCellData>\n");
+      fprintf(pf, "      <PDataArray type=\"Float64\" Name=\"mass\"/>\n");
+      fprintf(pf, "      <PDataArray type=\"Float64\" Name=\"velocity\" NumberOfComponents=\"3\"/>\n");
+      fprintf(pf, "      <PDataArray type=\"Float64\" Name=\"density\"/>\n");
+      fprintf(pf, "    </PCellData>\n");
+      for (int r = 0; r < nprocs; r++) {
+        const int rox = all_info[r*6+0], roy = all_info[r*6+1], roz = all_info[r*6+2];
+        const int rnx = all_info[r*6+3], rny = all_info[r*6+4], rnz = all_info[r*6+5];
+        char piece_file[512];
+        snprintf(piece_file, sizeof(piece_file), "%s_grid_%06ld_r%d.vti", prefix.c_str(), step, r);
+        const char* base = strrchr(piece_file, '/');
+        base = base ? base + 1 : piece_file;
+        fprintf(pf, "    <Piece Extent=\"%d %d %d %d %d %d\" Source=\"%s\"/>\n",
+                rox, rox + rnx, roy, roy + rny, roz, roz + rnz, base);
+      }
+      fprintf(pf, "  </PImageData>\n");
+      fprintf(pf, "</VTKFile>\n");
+      fclose(pf);
     }
   }
 
@@ -303,7 +286,7 @@ public:
     fprintf(fp, "  <Collection>\n");
     for (size_t i = 0; i < steps.size(); i++) {
       char vti_name[512];
-      snprintf(vti_name, sizeof(vti_name), "%s%s%06ld.vti",
+      snprintf(vti_name, sizeof(vti_name), "%s%s%06ld.pvti",
                vtk_prefix.c_str(), suffix.c_str(), steps[i]);
       const char* base = strrchr(vti_name, '/');
       base = base ? base + 1 : vti_name;
