@@ -11,7 +11,7 @@ The following issues are known and deferred for future development:
 
 ## Complete
 
-- **`atom_vec_mpm`**: Full MPI pack/unpack for exchange, border, restart, forward, and reverse communication (16 methods). Data file format: `atom-ID mol-ID atom-type x y z vol0`.
+- **`atom_vec_mpm`**: Full MPI pack/unpack for exchange, border, restart, forward, and reverse communication (16 methods). Data file format: `atom-ID mol-ID atom-type vol0 x y z`.
 - **`coupmpm_grid`**: SoA layout, variable ghost width, grid solve, B-bar normalization, per-body Bardenhagen node tracking.
 - **`coupmpm_kernel`**: Linear, quadratic B-spline, and cubic B-spline kernels with gradients and D_inv; support-range computation.
 - **`coupmpm_transfer`**: P2G (APIC, stress divergence, B-bar, per-body momentum, P2GRecord). G2P (velocity, affine matrix **B**_p, velocity gradient **L**, div_v). Anti-P2G migration protocol. MPI ghost exchange.

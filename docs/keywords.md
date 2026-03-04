@@ -129,7 +129,7 @@ boundary        f f f
 atom_style      mpm
 atom_modify     map array
 
-read_data       block.data          # atom-ID mol-ID type x y z vol0
+read_data       block.data          # atom-ID mol-ID type vol0 x y z
 
 # Parent fix: grid, kernel, constitutive model
 fix mpm all coupmpm                 \
