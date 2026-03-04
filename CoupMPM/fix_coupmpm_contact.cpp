@@ -28,6 +28,16 @@ FixCoupMPMContact::FixCoupMPMContact(LAMMPS *lmp, int narg, char **arg)
 
 /* ---------------------------------------------------------------------- */
 
+FixCoupMPMContact::~FixCoupMPMContact()
+{
+  if (parent) {
+    parent->fix_contact = nullptr;
+    parent->use_bardenhagen_contact = false;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
 int FixCoupMPMContact::setmask()
 {
   // No standard LAMMPS callbacks — parent drives us via stored pointer
@@ -84,7 +94,7 @@ void FixCoupMPMContact::init()
   parent = nullptr;
   for (int i = 0; i < modify->nfix; i++) {
     if (strcmp(modify->fix[i]->style, "coupmpm") == 0) {
-      parent = dynamic_cast<FixCoupMPM *>(modify->fix[i]);
+      parent = static_cast<FixCoupMPM *>(modify->fix[i]);
       break;
     }
   }

@@ -16,7 +16,7 @@ class FixCoupMPM;
 class FixCoupMPMContact : public Fix {
 public:
   FixCoupMPMContact(class LAMMPS *, int, char **);
-  ~FixCoupMPMContact() override = default;
+  ~FixCoupMPMContact() override;
 
   int setmask() override;
   void init() override;
