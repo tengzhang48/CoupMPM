@@ -1,0 +1,1702 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://tengzhang48.github.io/CoupMPM/theory_bbar_locking/">
+      
+      
+        <link rel="prev" href="../theory_apic_transfer/">
+      
+      
+        <link rel="next" href="../theory_bardenhagen_contact/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+    
+    
+      
+        <title>B-bar Anti-Locking - CoupMPM Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#theory-b-bar-volumetric-anti-locking-in-mpm" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="CoupMPM Documentation" class="md-header__button md-logo" aria-label="CoupMPM Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CoupMPM Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              B-bar Anti-Locking
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tengzhang48/CoupMPM" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tengzhang48/CoupMPM
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="CoupMPM Documentation" class="md-nav__button md-logo" aria-label="CoupMPM Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    CoupMPM Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tengzhang48/CoupMPM" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tengzhang48/CoupMPM
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../keywords/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Keywords & Syntax
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory Manual
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory Manual
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory Manual
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory_apic_transfer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core MPM & APIC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    B-bar Anti-Locking
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    B-bar Anti-Locking
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-the-origin-of-volumetric-locking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. The Origin of Volumetric Locking
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. The Origin of Volumetric Locking">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-incompressibility-constraint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Incompressibility Constraint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-why-discrete-velocity-fields-lock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Why Discrete Velocity Fields Lock
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-b-bar-formulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. B-Bar Formulation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. B-Bar Formulation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-classical-b-bar-idea" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Classical B-Bar Idea
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-smoothed-nodal-velocity-divergence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Smoothed Nodal Velocity Divergence
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2 Smoothed Nodal Velocity Divergence">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-p2g-accumulation-of-raw-mass-weighted-divergence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1 — P2G accumulation of raw, mass-weighted divergence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-ghost-exchange-and-mass-normalisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2 — Ghost exchange and mass normalisation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-particle-smoothed-divergence-g2p-interpolation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Particle Smoothed Divergence — G2P Interpolation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-isochoric-correction-to-the-velocity-gradient" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Isochoric Correction to the Velocity Gradient
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Isochoric Correction to the Velocity Gradient">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-corrected-velocity-gradient-barmathbfl_p" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Corrected Velocity Gradient \(\bar{\mathbf{L}}_p\)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-physical-interpretation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Physical Interpretation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-deformation-gradient-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Deformation Gradient Update
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-conservation-properties-and-accuracy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Conservation Properties and Accuracy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Conservation Properties and Accuracy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-mass-conservation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Mass Conservation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-momentum-conservation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Momentum Conservation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-consistency-with-the-incompressibility-constraint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Consistency with the Incompressibility Constraint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-order-of-accuracy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 Order of Accuracy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-summary-b-bar-algorithm-per-timestep" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Summary: B-Bar Algorithm per Timestep
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory_bardenhagen_contact/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Body Contact
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory_dynamic_cohesive/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dynamic Cohesive Zones
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory_adaptivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Particle Adaptivity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-the-origin-of-volumetric-locking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. The Origin of Volumetric Locking
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. The Origin of Volumetric Locking">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-incompressibility-constraint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Incompressibility Constraint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-why-discrete-velocity-fields-lock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Why Discrete Velocity Fields Lock
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-b-bar-formulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. B-Bar Formulation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. B-Bar Formulation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-classical-b-bar-idea" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Classical B-Bar Idea
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-smoothed-nodal-velocity-divergence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Smoothed Nodal Velocity Divergence
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2 Smoothed Nodal Velocity Divergence">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-p2g-accumulation-of-raw-mass-weighted-divergence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1 — P2G accumulation of raw, mass-weighted divergence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-ghost-exchange-and-mass-normalisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2 — Ghost exchange and mass normalisation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-particle-smoothed-divergence-g2p-interpolation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Particle Smoothed Divergence — G2P Interpolation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-isochoric-correction-to-the-velocity-gradient" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Isochoric Correction to the Velocity Gradient
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Isochoric Correction to the Velocity Gradient">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-corrected-velocity-gradient-barmathbfl_p" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Corrected Velocity Gradient \(\bar{\mathbf{L}}_p\)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-physical-interpretation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Physical Interpretation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-deformation-gradient-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Deformation Gradient Update
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-conservation-properties-and-accuracy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Conservation Properties and Accuracy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Conservation Properties and Accuracy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-mass-conservation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Mass Conservation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-momentum-conservation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Momentum Conservation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-consistency-with-the-incompressibility-constraint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Consistency with the Incompressibility Constraint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-order-of-accuracy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 Order of Accuracy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-summary-b-bar-algorithm-per-timestep" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Summary: B-Bar Algorithm per Timestep
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="theory-b-bar-volumetric-anti-locking-in-mpm">Theory: B-Bar Volumetric Anti-Locking in MPM</h1>
+<h2 id="1-overview">1. Overview</h2>
+<p>Nearly incompressible materials — rubber-like elastomers, biological soft tissues, and metals
+deforming plastically — obey a near-isochoric constraint: the volumetric deformation
+<span class="arithmatex">\(J = \det(\mathbf{F}) \approx 1\)</span> at all times. When such materials are discretised with
+low-order interpolation (linear shape functions, or the equivalent in MPM), the discrete
+velocity field cannot simultaneously satisfy the momentum equations and the volumetric
+constraint everywhere. The result is <strong>volumetric locking</strong>: the solution is artificially
+stiff, displacements are severely underestimated, and pressure fields exhibit spurious
+oscillations.</p>
+<p>CoupMPM resolves this pathology with the <strong>B-bar method</strong> originally proposed by Hughes
+(1980) for finite elements and adapted here to the APIC-MPM context. The core idea is to
+replace the <em>local</em>, particle-level volumetric strain rate — which is prone to locking —
+with a <em>smoothed</em>, grid-level estimate that distributes the incompressibility constraint
+more uniformly across the support neighbourhood. The resulting corrected velocity gradient
+<span class="arithmatex">\(\bar{\mathbf{L}}_p\)</span> is then used to advance the deformation gradient <span class="arithmatex">\(\mathbf{F}_p\)</span>,
+ensuring that the discrete formulation remains nearly locking-free even for fully
+incompressible constitutive models.</p>
+<hr />
+<h2 id="2-the-origin-of-volumetric-locking">2. The Origin of Volumetric Locking</h2>
+<h3 id="21-incompressibility-constraint">2.1 Incompressibility Constraint</h3>
+<p>For a hyperelastic material with bulk modulus <span class="arithmatex">\(\kappa \gg \mu\)</span> (shear modulus), the
+Cauchy stress decomposes into deviatoric and volumetric parts:</p>
+<div class="arithmatex">\[
+\boldsymbol{\sigma} = \boldsymbol{\sigma}^{\mathrm{dev}} + p \, \mathbf{I},
+\qquad
+p = \kappa \, (J - 1),
+\]</div>
+<p>where <span class="arithmatex">\(p\)</span> is the hydrostatic pressure and <span class="arithmatex">\(J = \det(\mathbf{F})\)</span>. In the incompressible
+limit <span class="arithmatex">\(\kappa \to \infty\)</span>, the kinematic constraint <span class="arithmatex">\(J = 1\)</span> must be enforced exactly; for
+finite but large <span class="arithmatex">\(\kappa\)</span>, even a small error in <span class="arithmatex">\(J\)</span> generates an enormous pressure, which
+pollutes the entire stress field.</p>
+<h3 id="22-why-discrete-velocity-fields-lock">2.2 Why Discrete Velocity Fields Lock</h3>
+<p>The discretised rate of volume change at particle <span class="arithmatex">\(p\)</span> is given by the divergence of the
+interpolated velocity field:</p>
+<div class="arithmatex">\[
+\dot{J}_p / J_p = \mathrm{tr}(\mathbf{L}_p) = \nabla \cdot \mathbf{v} \big|_p
+= \sum_i v_i^\alpha \, \frac{\partial w_{ip}}{\partial x^\alpha},
+\]</div>
+<p>where <span class="arithmatex">\(w_{ip}\)</span> are the MPM shape-function weights, <span class="arithmatex">\(\mathbf{v}_i\)</span> the grid nodal
+velocities, and summation over the repeated Greek index <span class="arithmatex">\(\alpha\)</span> is implied.</p>
+<p>Because MPM (like low-order FEM) uses the <em>same</em> shape functions for both the momentum
+equation and the incompressibility constraint, the two conditions over-constrain the nodal
+degrees of freedom in the incompressible limit. In practice this locks the volumetric mode:
+the stiffness matrix develops a near-null space that forces the displacement solution
+toward zero. The locking is most severe for linear kernels and diminishes but does not
+vanish for higher-order B-splines.</p>
+<hr />
+<h2 id="3-b-bar-formulation">3. B-Bar Formulation</h2>
+<h3 id="31-classical-b-bar-idea">3.1 Classical B-Bar Idea</h3>
+<p>Hughes (1980) showed that locking can be eliminated — or greatly reduced — by replacing the
+<em>local</em> volumetric strain operator <span class="arithmatex">\(\mathbf{B}_{\mathrm{vol}}\)</span> with a <em>smoothed</em> operator
+<span class="arithmatex">\(\bar{\mathbf{B}}_{\mathrm{vol}}\)</span> evaluated at a reduced integration point (the element
+centroid in FEM). In the MPM context this translates to replacing the local particle-level
+velocity divergence <span class="arithmatex">\(\mathrm{tr}(\mathbf{L}_p)\)</span> with a smoothed counterpart <span class="arithmatex">\(\bar{d}_p\)</span>
+computed by mass-weighted averaging over the grid stencil.</p>
+<h3 id="32-smoothed-nodal-velocity-divergence">3.2 Smoothed Nodal Velocity Divergence</h3>
+<h4 id="step-1-p2g-accumulation-of-raw-mass-weighted-divergence">Step 1 — P2G accumulation of raw, mass-weighted divergence</h4>
+<p>During the Particle-to-Grid (P2G) step, each particle <span class="arithmatex">\(p\)</span> contributes to a <em>raw</em>
+(un-normalised) divergence field on the grid. The particle velocity evaluated at node <span class="arithmatex">\(i\)</span>
+with the APIC affine correction is</p>
+<div class="arithmatex">\[
+\tilde{\mathbf{v}}_p(\mathbf{x}_i)
+= \mathbf{v}_p + \mathbf{C}_p \, (\mathbf{x}_i - \mathbf{x}_p),
+\]</div>
+<p>where <span class="arithmatex">\(\mathbf{v}_p\)</span> is the particle translational velocity and <span class="arithmatex">\(\mathbf{C}_p\)</span> is the APIC
+affine matrix. The APIC-augmented velocity divergence contribution from particle <span class="arithmatex">\(p\)</span> to
+node <span class="arithmatex">\(i\)</span> is</p>
+<div class="arithmatex">\[
+\hat{d}_i \;\mathrel{+}=\; m_p \, \nabla w_{ip} \cdot \tilde{\mathbf{v}}_p(\mathbf{x}_i)
+= m_p \sum_{\alpha} \frac{\partial w_{ip}}{\partial x^\alpha}
+  \left[ v_p^\alpha + \sum_{\beta} C_p^{\alpha\beta}(x_i^\beta - x_p^\beta) \right].
+\]</div>
+<p>Accumulating over all particles in the support of node <span class="arithmatex">\(i\)</span> gives the unnormalised nodal
+quantity</p>
+<div class="arithmatex">\[
+\hat{d}_i = \sum_p m_p \, \nabla w_{ip} \cdot \tilde{\mathbf{v}}_p(\mathbf{x}_i).
+\]</div>
+<p>In <code>p2g()</code> this reads:
+<div class="highlight"><pre><span></span><code><span class="c1">// B-bar: accumulate mass-weighted velocity divergence</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">use_bbar</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kt">double</span><span class="w"> </span><span class="n">v_dot_grad</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">v_apic_d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vp</span><span class="p">[</span><span class="n">d</span><span class="p">];</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w"> </span><span class="n">e</span><span class="o">++</span><span class="p">)</span>
+<span class="w">      </span><span class="n">v_apic_d</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">Cp</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">d</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">e</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dx_pn</span><span class="p">[</span><span class="n">e</span><span class="p">];</span>
+<span class="w">    </span><span class="n">v_dot_grad</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">v_apic_d</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">grad_w</span><span class="p">[</span><span class="n">d</span><span class="p">];</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="n">grid</span><span class="p">.</span><span class="n">raw_div_v</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">mp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">v_dot_grad</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<h4 id="step-2-ghost-exchange-and-mass-normalisation">Step 2 — Ghost exchange and mass normalisation</h4>
+<p>After all P2G contributions have been accumulated, a reverse (ghost → owner) MPI
+communication sums ghost-node contributions onto owner nodes. The smoothed nodal divergence
+is then obtained by normalising with the nodal mass:</p>
+<div class="arithmatex">\[
+\bar{d}_i = \frac{\hat{d}_i}{m_i}, \qquad m_i &gt; 0.
+\]</div>
+<p>This normalisation is equivalent to a mass-weighted spatial average of the local velocity
+divergences over the support neighbourhood of node <span class="arithmatex">\(i\)</span>, providing the desired smoothing
+effect. The normalised field is stored in <code>grid.div_v[n]</code> and broadcast to ghost nodes via
+a forward MPI exchange before the G2P step.</p>
+<h3 id="33-particle-smoothed-divergence-g2p-interpolation">3.3 Particle Smoothed Divergence — G2P Interpolation</h3>
+<p>During the Grid-to-Particle (G2P) step, the smoothed nodal divergence is interpolated back
+to each particle using the same shape functions:</p>
+<div class="arithmatex">\[
+\bar{d}_p = \sum_i w_{ip} \, \bar{d}_i.
+\]</div>
+<p>This gives a particle-level smoothed velocity divergence that reflects the average
+volumetric behaviour of the neighbourhood rather than the purely local value derived from
+the velocity gradient. In <code>g2p()</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// B-bar smoothed divergence</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">use_bbar</span><span class="p">)</span>
+<span class="w">  </span><span class="n">dv_smooth</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">grid</span><span class="p">.</span><span class="n">div_v</span><span class="p">[</span><span class="n">n</span><span class="p">];</span>
+</code></pre></div>
+<hr />
+<h2 id="4-isochoric-correction-to-the-velocity-gradient">4. Isochoric Correction to the Velocity Gradient</h2>
+<h3 id="41-corrected-velocity-gradient-barmathbfl_p">4.1 Corrected Velocity Gradient <span class="arithmatex">\(\bar{\mathbf{L}}_p\)</span></h3>
+<p>Given the particle's raw velocity gradient <span class="arithmatex">\(\mathbf{L}_p\)</span> (computed from the standard
+shape-function interpolation in G2P) and the smoothed divergence <span class="arithmatex">\(\bar{d}_p\)</span>, the B-bar
+corrected velocity gradient is</p>
+<div class="arithmatex">\[
+\bar{\mathbf{L}}_p = \mathbf{L}_p
++ \underbrace{\frac{\bar{d}_p - \mathrm{tr}(\mathbf{L}_p)}{3}}_{\delta d_p} \mathbf{I},
+\]</div>
+<p>where <span class="arithmatex">\(\mathrm{tr}(\mathbf{L}_p) = L_p^{11} + L_p^{22} + L_p^{33}\)</span> is the local velocity
+divergence, and <span class="arithmatex">\(\mathbf{I}\)</span> is the <span class="arithmatex">\(3\times3\)</span> identity tensor.</p>
+<p>The scalar correction <span class="arithmatex">\(\delta d_p = (\bar{d}_p - \mathrm{tr}(\mathbf{L}_p)) / 3\)</span> is added
+equally to all three diagonal entries of <span class="arithmatex">\(\mathbf{L}_p\)</span>, so that</p>
+<div class="arithmatex">\[
+\mathrm{tr}(\bar{\mathbf{L}}_p) = \mathrm{tr}(\mathbf{L}_p) + 3\,\delta d_p = \bar{d}_p.
+\]</div>
+<p>The off-diagonal (deviatoric shear) components are left entirely unchanged:
+<span class="arithmatex">\(\bar{L}_p^{\alpha\beta} = L_p^{\alpha\beta}\)</span> for <span class="arithmatex">\(\alpha \neq \beta\)</span>. The correction is
+therefore <strong>purely volumetric</strong> — it alters only the isotropic part of the velocity
+gradient while preserving the deviatoric kinematics.</p>
+<p>In <code>update_F_and_stress()</code>:
+<div class="highlight"><pre><span></span><code><span class="c1">// B-bar correction</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">L_bar</span><span class="p">[</span><span class="mi">9</span><span class="p">];</span>
+<span class="n">std</span><span class="o">::</span><span class="n">memcpy</span><span class="p">(</span><span class="n">L_bar</span><span class="p">,</span><span class="w"> </span><span class="n">Lp</span><span class="p">,</span><span class="w"> </span><span class="mi">9</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">));</span>
+
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">use_bbar</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">div_v_s</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kt">double</span><span class="w"> </span><span class="n">tr_L</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Lp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Lp</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Lp</span><span class="p">[</span><span class="mi">8</span><span class="p">];</span>
+<span class="w">  </span><span class="kt">double</span><span class="w"> </span><span class="n">correction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">div_v_s</span><span class="p">[</span><span class="n">p</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">tr_L</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">3.0</span><span class="p">;</span>
+<span class="w">  </span><span class="n">L_bar</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">correction</span><span class="p">;</span>
+<span class="w">  </span><span class="n">L_bar</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">correction</span><span class="p">;</span>
+<span class="w">  </span><span class="n">L_bar</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">correction</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<h3 id="42-physical-interpretation">4.2 Physical Interpretation</h3>
+<p>The additive split</p>
+<div class="arithmatex">\[
+\bar{\mathbf{L}}_p = \underbrace{\mathbf{L}_p - \tfrac{1}{3}\mathrm{tr}(\mathbf{L}_p)\mathbf{I}}_{\text{deviatoric (unchanged)}}
++ \underbrace{\tfrac{1}{3}\bar{d}_p \, \mathbf{I}}_{\text{volumetric (smoothed)}}
+\]</div>
+<p>reveals that B-bar replaces only the volumetric part <span class="arithmatex">\(\tfrac{1}{3}\mathrm{tr}(\mathbf{L}_p)\mathbf{I}\)</span>
+with the grid-averaged equivalent <span class="arithmatex">\(\tfrac{1}{3}\bar{d}_p \mathbf{I}\)</span>. The deviatoric
+part <span class="arithmatex">\(\mathbf{L}_p^{\mathrm{dev}} = \mathbf{L}_p - \tfrac{1}{3}\mathrm{tr}(\mathbf{L}_p)\mathbf{I}\)</span>
+is computed at the standard MPM accuracy and remains unmodified.</p>
+<p>This approach is directly analogous to the selective reduced integration technique in FEM:
+the volumetric strain energy (which is responsible for the locking pressure constraint) is
+evaluated at the coarser, grid-level resolution, while the deviatoric strain energy (which
+carries the physically important shear stiffness) is evaluated at the full particle-level
+resolution.</p>
+<hr />
+<h2 id="5-deformation-gradient-update">5. Deformation Gradient Update</h2>
+<p>With the B-bar corrected velocity gradient <span class="arithmatex">\(\bar{\mathbf{L}}_p\)</span> in hand, the deformation
+gradient is updated by the explicit multiplicative forward-Euler integrator:</p>
+<div class="arithmatex">\[
+\mathbf{F}_p^{n+1} = \left(\mathbf{I} + \Delta t \, \bar{\mathbf{L}}_p \right) \mathbf{F}_p^n.
+\]</div>
+<p>The Jacobian (volume ratio) at the new time is</p>
+<div class="arithmatex">\[
+J_p^{n+1} = \det\!\left(\mathbf{F}_p^{n+1}\right),
+\]</div>
+<p>and the updated current particle volume is <span class="arithmatex">\(V_p^{n+1} = V_p^0 \, J_p^{n+1}\)</span>, where
+<span class="arithmatex">\(V_p^0\)</span> is the (fixed) reference volume. The Cauchy stress <span class="arithmatex">\(\boldsymbol{\sigma}_p^{n+1}\)</span>
+is subsequently evaluated from the chosen constitutive model (Neo-Hookean or
+Mooney-Rivlin) using <span class="arithmatex">\(\mathbf{F}_p^{n+1}\)</span>.</p>
+<p>In <code>update_F_and_stress()</code>:
+<div class="highlight"><pre><span></span><code><span class="c1">// F_new = (I + dt * L_bar) * F_old</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">F_new</span><span class="p">[</span><span class="mi">9</span><span class="p">];</span>
+<span class="n">Mat3</span><span class="o">::</span><span class="n">update_F</span><span class="p">(</span><span class="n">Fp</span><span class="p">,</span><span class="w"> </span><span class="n">L_bar</span><span class="p">,</span><span class="w"> </span><span class="n">dt</span><span class="p">,</span><span class="w"> </span><span class="n">F_new</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">memcpy</span><span class="p">(</span><span class="n">Fp</span><span class="p">,</span><span class="w"> </span><span class="n">F_new</span><span class="p">,</span><span class="w"> </span><span class="mi">9</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">double</span><span class="p">));</span>
+
+<span class="c1">// Compute stress</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">J</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Mat3</span><span class="o">::</span><span class="n">det</span><span class="p">(</span><span class="n">F_new</span><span class="p">);</span>
+<span class="n">constitutive</span><span class="p">.</span><span class="n">compute_stress</span><span class="p">(</span><span class="n">F_new</span><span class="p">,</span><span class="w"> </span><span class="n">J</span><span class="p">,</span><span class="w"> </span><span class="n">st</span><span class="p">,</span><span class="w"> </span><span class="n">dt</span><span class="p">,</span><span class="w"> </span><span class="n">sp</span><span class="p">);</span>
+</code></pre></div></p>
+<hr />
+<h2 id="6-conservation-properties-and-accuracy">6. Conservation Properties and Accuracy</h2>
+<h3 id="61-mass-conservation">6.1 Mass Conservation</h3>
+<p>The B-bar correction modifies only the velocity gradient used for the <span class="arithmatex">\(\mathbf{F}\)</span>-update;
+it does not alter the velocity field itself or the P2G momentum transfer. Consequently,
+the total mass <span class="arithmatex">\(M = \sum_p m_p\)</span> is unchanged, and nodal mass conservation is unaffected.</p>
+<h3 id="62-momentum-conservation">6.2 Momentum Conservation</h3>
+<p>Because the corrected velocity gradient <span class="arithmatex">\(\bar{\mathbf{L}}_p\)</span> is derived entirely from the
+same nodal velocities <span class="arithmatex">\(\mathbf{v}_i^{n+1}\)</span> that drive the P2G momentum mapping, global
+linear momentum is conserved to machine precision.</p>
+<h3 id="63-consistency-with-the-incompressibility-constraint">6.3 Consistency with the Incompressibility Constraint</h3>
+<p>In the smooth (continuum) limit where every particle has identical neighbourhood
+statistics, <span class="arithmatex">\(\bar{d}_p \to \mathrm{tr}(\mathbf{L}_p)\)</span> and the correction vanishes:
+the B-bar formulation reduces to the standard MPM. The correction is active only where
+the discrete velocity field exhibits spurious volumetric modes inconsistent with the
+imposed incompressibility, which is precisely where locking would otherwise manifest.</p>
+<h3 id="64-order-of-accuracy">6.4 Order of Accuracy</h3>
+<p>The smoothing operation <span class="arithmatex">\(\hat{d}_i \to \bar{d}_i\)</span> is a mass-weighted average over the
+kernel support, which introduces an <span class="arithmatex">\(\mathcal{O}(h^2)\)</span> smoothing error (where <span class="arithmatex">\(h\)</span> is the
+grid spacing) on smooth solutions. Since the standard MPM velocity gradient is itself
+first-order in space for linear kernels and second-order for quadratic B-splines, the B-bar
+correction does not reduce the asymptotic accuracy of the scheme; the overall spatial
+accuracy is maintained at the same order as the underlying kernel.</p>
+<hr />
+<h2 id="7-summary-b-bar-algorithm-per-timestep">7. Summary: B-Bar Algorithm per Timestep</h2>
+<p>The following steps are inserted into the standard APIC-MPM timestep to implement B-bar
+anti-locking. Steps that are specific to B-bar are marked with <strong>[B]</strong>.</p>
+<ol>
+<li><strong>P2G</strong> — for each particle <span class="arithmatex">\(p\)</span> and each node <span class="arithmatex">\(i\)</span> in its support:</li>
+<li>Standard contributions (mass, APIC momentum, internal and external forces).</li>
+<li>
+<p><strong>[B]</strong> Accumulate raw divergence:
+     $$
+     \hat{d}<em>i \mathrel{+}= m_p \sum</em>\alpha \frac{\partial w_{ip}}{\partial x^\alpha}
+     \left[ v_p^\alpha + \sum_\beta C_p^{\alpha\beta}(x_i^\beta - x_p^\beta) \right].
+     $$</p>
+</li>
+<li>
+<p><strong>Reverse MPI exchange</strong> — sum ghost-node <span class="arithmatex">\(\hat{d}_i\)</span> onto owner nodes.</p>
+</li>
+<li>
+<p><strong>Grid solve</strong> — integrate momentum and <strong>[B]</strong> normalise:
+   $$
+   \bar{d}_i = \hat{d}_i \, / \, m_i.
+   $$</p>
+</li>
+<li>
+<p><strong>Forward MPI exchange</strong> — broadcast <span class="arithmatex">\(\mathbf{v}_i^{n+1}\)</span> and <strong>[B]</strong> <span class="arithmatex">\(\bar{d}_i\)</span> to ghost nodes.</p>
+</li>
+<li>
+<p><strong>G2P</strong> — for each particle <span class="arithmatex">\(p\)</span> and each node <span class="arithmatex">\(i\)</span> in its support:</p>
+</li>
+<li>Standard contributions (velocity, APIC matrix, velocity gradient).</li>
+<li>
+<p><strong>[B]</strong> Interpolate smoothed divergence:
+     $$
+     \bar{d}<em>p \mathrel{+}= w</em>{ip} \, \bar{d}_i.
+     $$</p>
+</li>
+<li>
+<p><strong>F and stress update</strong> (<code>update_F_and_stress</code>) — <strong>[B]</strong> apply isochoric correction:
+   $$
+   \bar{\mathbf{L}}_p = \mathbf{L}_p + \frac{\bar{d}_p - \mathrm{tr}(\mathbf{L}_p)}{3}\,\mathbf{I},
+   $$
+   then advance the deformation gradient and evaluate the constitutive model:
+   $$
+   \mathbf{F}_p^{n+1} = \left(\mathbf{I} + \Delta t\,\bar{\mathbf{L}}_p\right)\mathbf{F}_p^n.
+   $$</p>
+</li>
+</ol>
+<hr />
+<h2 id="references">References</h2>
+<ul>
+<li>Hughes, T. J. R. (1980). Generalization of selective integration procedures to anisotropic
+  and nonlinear media. <em>International Journal for Numerical Methods in Engineering</em>, 15(9),
+  1413–1418. https://doi.org/10.1002/nme.1620150914</li>
+<li>Nagtegaal, J. C., Parks, D. M., &amp; Rice, J. R. (1974). On numerically accurate finite
+  element solutions in the fully plastic range. <em>Computer Methods in Applied Mechanics and
+  Engineering</em>, 4(2), 153–177. https://doi.org/10.1016/0045-7825(74)90032-2</li>
+<li>de Souza Neto, E. A., Perić, D., Dutko, M., &amp; Owen, D. R. J. (1996). Design of simple
+  low order finite elements for large strain analysis of nearly incompressible solids.
+  <em>International Journal of Solids and Structures</em>, 33(20–22), 3277–3296.
+  https://doi.org/10.1016/0020-7683(95)00259-6</li>
+<li>Jiang, C., Schroeder, C., Selle, A., Teran, J., &amp; Stomakhin, A. (2015). The affine
+  particle-in-cell method. <em>ACM Transactions on Graphics</em>, 34(4), 51.
+  https://doi.org/10.1145/2766996</li>
+<li>Coombs, W. M., Charlton, T. J., Cortis, M., &amp; Augarde, C. E. (2018). Overcoming
+  volumetric locking in material point methods. <em>Computer Methods in Applied Mechanics and
+  Engineering</em>, 333, 1–21. https://doi.org/10.1016/j.cma.2018.01.010</li>
+<li>Sulsky, D., Chen, Z., &amp; Schreyer, H. L. (1994). A particle method for history-dependent
+  materials. <em>Computer Methods in Applied Mechanics and Engineering</em>, 118(1–2), 179–196.
+  https://doi.org/10.1016/0045-7825(94)90112-0</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.indexes"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

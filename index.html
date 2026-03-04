@@ -1,0 +1,2418 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://tengzhang48.github.io/CoupMPM/">
+      
+      
+      
+        <link rel="next" href="user_guide/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+    
+    
+      
+        <title>CoupMPM Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#coupmpm-material-point-method-package-for-lammps" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="." title="CoupMPM Documentation" class="md-header__button md-logo" aria-label="CoupMPM Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CoupMPM Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Home
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tengzhang48/CoupMPM" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tengzhang48/CoupMPM
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="CoupMPM Documentation" class="md-nav__button md-logo" aria-label="CoupMPM Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    CoupMPM Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tengzhang48/CoupMPM" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tengzhang48/CoupMPM
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="." class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#source-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source Layout
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#companion-fix-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Companion Fix Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Features
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#affine-particle-in-cell-apic-transfers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Affine Particle-In-Cell (APIC) Transfers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-bar-volumetric-anti-locking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B-Bar Volumetric Anti-Locking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bardenhagen-multi-body-contact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bardenhagen Multi-Body Contact
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dynamic-cohesive-zone-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dynamic Cohesive Zone Module
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mpi-parallelism-and-hpc-readiness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MPI Parallelism and HPC Readiness
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-instructions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build Instructions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Build Instructions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#traditional-make-in-tree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Traditional Make (in-tree)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cmake" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CMake
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-and-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage and Syntax
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage and Syntax">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fix-command-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fix Command Syntax
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Fix Command Syntax">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parent-fix-fix-coupmpm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parent fix (fix coupmpm)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#companion-fix-contact-fix-coupmpmcontact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Companion fix: contact (fix coupmpm/contact)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#companion-fix-cohesive-zones-fix-coupmpmcohesive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Companion fix: cohesive zones (fix coupmpm/cohesive)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#companion-fix-adaptivity-fix-coupmpmadaptivity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Companion fix: adaptivity (fix coupmpm/adaptivity)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#companion-fix-output-fix-coupmpmoutput" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Companion fix: output (fix coupmpm/output)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyword-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keyword Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Keyword Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fix-coupmpm-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fix coupmpm keywords
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-coupmpmcontact-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fix coupmpm/contact keywords
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-coupmpmcohesive-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fix coupmpm/cohesive keywords
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-coupmpmadaptivity-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fix coupmpm/adaptivity keywords
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-coupmpmoutput-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fix coupmpm/output keywords
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#minimal-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Minimal Example
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Minimal Example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cohesive-zone-example-cell-sorting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cohesive Zone Example (Cell Sorting)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Known Limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Status
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implementation Status">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#complete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stubs-and-future-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stubs and Future Work
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-physics-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Physics Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-correspondence-with-couplb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Correspondence with CoupLB
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validation-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validation Roadmap
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Validation Roadmap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-0-single-rank-benchmarks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 0 — Single-rank benchmarks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-multi-rank-benchmarks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1 — Multi-rank benchmarks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-contact-benchmarks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2 — Contact benchmarks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-biological-applications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3 — Biological applications
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="user_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="keywords/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Keywords & Syntax
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory Manual
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory Manual
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory Manual
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="theory_apic_transfer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core MPM & APIC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="theory_bbar_locking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    B-bar Anti-Locking
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="theory_bardenhagen_contact/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Body Contact
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="theory_dynamic_cohesive/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dynamic Cohesive Zones
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="theory_adaptivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Particle Adaptivity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="developer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#source-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source Layout
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#companion-fix-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Companion Fix Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Features
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#affine-particle-in-cell-apic-transfers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Affine Particle-In-Cell (APIC) Transfers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-bar-volumetric-anti-locking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B-Bar Volumetric Anti-Locking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bardenhagen-multi-body-contact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bardenhagen Multi-Body Contact
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dynamic-cohesive-zone-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dynamic Cohesive Zone Module
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mpi-parallelism-and-hpc-readiness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MPI Parallelism and HPC Readiness
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-instructions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build Instructions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Build Instructions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#traditional-make-in-tree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Traditional Make (in-tree)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cmake" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CMake
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-and-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage and Syntax
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage and Syntax">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fix-command-syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fix Command Syntax
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Fix Command Syntax">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parent-fix-fix-coupmpm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parent fix (fix coupmpm)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#companion-fix-contact-fix-coupmpmcontact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Companion fix: contact (fix coupmpm/contact)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#companion-fix-cohesive-zones-fix-coupmpmcohesive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Companion fix: cohesive zones (fix coupmpm/cohesive)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#companion-fix-adaptivity-fix-coupmpmadaptivity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Companion fix: adaptivity (fix coupmpm/adaptivity)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#companion-fix-output-fix-coupmpmoutput" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Companion fix: output (fix coupmpm/output)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyword-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keyword Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Keyword Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fix-coupmpm-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fix coupmpm keywords
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-coupmpmcontact-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fix coupmpm/contact keywords
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-coupmpmcohesive-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fix coupmpm/cohesive keywords
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-coupmpmadaptivity-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fix coupmpm/adaptivity keywords
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-coupmpmoutput-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fix coupmpm/output keywords
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#minimal-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Minimal Example
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Minimal Example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cohesive-zone-example-cell-sorting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cohesive Zone Example (Cell Sorting)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Known Limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Status
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implementation Status">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#complete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stubs-and-future-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stubs and Future Work
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-physics-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Physics Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-correspondence-with-couplb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Correspondence with CoupLB
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validation-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validation Roadmap
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Validation Roadmap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-0-single-rank-benchmarks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 0 — Single-rank benchmarks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-multi-rank-benchmarks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1 — Multi-rank benchmarks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-contact-benchmarks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2 — Contact benchmarks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-biological-applications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3 — Biological applications
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="coupmpm-material-point-method-package-for-lammps">CoupMPM — Material Point Method Package for LAMMPS</h1>
+<h2 id="overview">Overview</h2>
+<p>CoupMPM is a highly scalable Eulerian-Lagrangian Material Point Method (MPM) solver implemented as a native LAMMPS package. It is specifically designed for extreme-deformation, multi-physics simulations including soft-matter mechanics, bio-inspired materials, and cell-aggregate dynamics. The package couples a background Eulerian grid with Lagrangian material points, enabling robust handling of large strains, topological changes, and multi-body contact without mesh distortion.</p>
+<p>The solver integrates directly with the LAMMPS parallelism infrastructure. All grid operations and particle-to-grid (P2G) / grid-to-particle (G2P) transfers are fully MPI-parallelized through a ghost-exchange protocol, making CoupMPM suitable for high-performance computing (HPC) deployments at arbitrary processor counts.</p>
+<h3 id="source-layout">Source Layout</h3>
+<div class="highlight"><pre><span></span><code>CoupMPM/
+├── fix_coupmpm.h/.cpp              Parent fix: grid/MPI setup, P2G→grid solve→G2P timestep loop
+├── fix_coupmpm_contact.h/.cpp      Companion fix: multi-body contact (Bardenhagen / penalty)
+├── fix_coupmpm_cohesive.h/.cpp     Companion fix: dynamic cohesive zones and bond management
+├── fix_coupmpm_adaptivity.h/.cpp   Companion fix: particle splitting and merging
+├── fix_coupmpm_output.h/.cpp       Companion fix: VTK output and surface detection
+├── atom_vec_mpm.h/.cpp             Custom atom_style mpm: MPI pack/unpack for all MPM fields
+├── coupmpm_grid.h                  Background grid: SoA layout, ghost-inclusive indexing
+├── coupmpm_kernel.h                Shape functions: linear, quadratic B-spline, cubic B-spline
+├── coupmpm_transfer.h              P2G, G2P (APIC + B-bar), anti-P2G, MPI ghost exchange
+├── coupmpm_stress.h                Constitutive models: Neo-Hookean, Mooney-Rivlin
+├── coupmpm_contact.h               Multi-body contact algorithms: Bardenhagen, penalty
+├── coupmpm_surface.h               Surface detection via density gradient with MPI reduction
+├── coupmpm_adaptivity.h            Particle splitting and merging for resolution control
+├── coupmpm_cohesive.h              Dynamic Cohesive Zone module for adhesion/cell sorting
+└── coupmpm_io.h                    VTK grid/particle output with PVD time-series index
+</code></pre></div>
+<h3 id="companion-fix-architecture">Companion Fix Architecture</h3>
+<p><code>fix coupmpm</code> is the <strong>parent</strong> fix and manages the core MPM timestep loop (P2G → grid solve → G2P). Four optional <strong>companion fixes</strong> extend its behaviour; each locates the parent fix in its <code>init()</code> method and registers a pointer with it:</p>
+<table>
+<thead>
+<tr>
+<th>Companion fix</th>
+<th>Style string</th>
+<th>Functionality</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>FixCoupMPMContact</code></td>
+<td><code>coupmpm/contact</code></td>
+<td>Bardenhagen / penalty contact on the grid</td>
+</tr>
+<tr>
+<td><code>FixCoupMPMCohesive</code></td>
+<td><code>coupmpm/cohesive</code></td>
+<td>Dynamic cohesive zone bonds</td>
+</tr>
+<tr>
+<td><code>FixCoupMPMAdaptivity</code></td>
+<td><code>coupmpm/adaptivity</code></td>
+<td>Particle splitting and merging</td>
+</tr>
+<tr>
+<td><code>FixCoupMPMOutput</code></td>
+<td><code>coupmpm/output</code></td>
+<td>VTK file output and surface detection</td>
+</tr>
+</tbody>
+</table>
+<p>Companion fixes are <strong>entirely optional</strong>. Any subset may be used and the parent fix works standalone. Each companion:
+1. Finds the parent in <code>init()</code> via a loop over <code>modify-&gt;fix[]</code> and stores a back-pointer.
+2. Registers itself with the parent (<code>parent-&gt;fix_contact = this</code>, etc.).
+3. The parent calls contact callbacks (<code>pre_p2g</code>, <code>post_grid_solve</code>) directly inside <code>initial_integrate</code>.
+4. Cohesive force injection (<code>compute_forces_before_p2g</code>) is similarly driven by the parent before P2G.
+5. <code>end_of_step</code> callbacks (surface detection, VTK output, adaptivity, bond updates) are handled by LAMMPS calling each companion's own <code>end_of_step</code> method.</p>
+<hr />
+<h2 id="key-features">Key Features</h2>
+<h3 id="affine-particle-in-cell-apic-transfers">Affine Particle-In-Cell (APIC) Transfers</h3>
+<p>P2G and G2P transfers use the APIC formulation (Jiang et al. 2015, 2017), in which each particle carries an affine velocity matrix <strong>C</strong>_p in addition to its translational velocity. This eliminates the angular-momentum dissipation inherent in PIC while retaining numerical stability superior to FLIP, and avoids the cell-crossing instability of pure FLIP.</p>
+<h3 id="b-bar-volumetric-anti-locking">B-Bar Volumetric Anti-Locking</h3>
+<p>Volumetric locking in nearly incompressible materials is suppressed through the B-bar projection method. The smoothed volumetric strain rate is accumulated on the grid during P2G and projected back during G2P, ensuring that the deviatoric and volumetric parts of the deformation gradient are treated consistently without spurious pressure oscillations.</p>
+<h3 id="bardenhagen-multi-body-contact">Bardenhagen Multi-Body Contact</h3>
+<p>Inter-body contact is resolved by the Bardenhagen–Kober algorithm (Bardenhagen et al. 2000). At nodes where mass from multiple distinct bodies overlaps, per-body velocities are decomposed into normal and tangential components relative to a geometrically consistent contact normal. Impenetrability is enforced via a momentum-exchange impulse, and Coulomb friction and area-scaled adhesion (J m⁻²) are applied in the tangential direction.</p>
+<h3 id="dynamic-cohesive-zone-module">Dynamic Cohesive Zone Module</h3>
+<p>A novel Dynamic Cohesive Zone (DCZ) module enables runtime formation and rupture of adhesive bonds between material-point pairs. Three traction-separation laws are available: the Needleman-Xu exponential law, a linear-elastic softening law, and a receptor-ligand kinetic law suited to cell-membrane adhesion modelling. The DCZ module is designed for cell-sorting and dynamic-adhesion applications in which bonds form and break stochastically during the simulation.</p>
+<h3 id="mpi-parallelism-and-hpc-readiness">MPI Parallelism and HPC Readiness</h3>
+<ul>
+<li>Ghost-node exchange (forward and reverse) covers all P2G accumulation fields: mass, momentum, internal force, external force, and volumetric strain rate.</li>
+<li>Global <code>MPI_Allreduce</code> operations enforce consistent surface-detection thresholds and CFL timestep constraints across all ranks.</li>
+<li>Particle migration uses LAMMPS's native <code>comm-&gt;exchange</code> mechanism, with an anti-P2G protocol that removes departing particles from the grid before they leave the subdomain.</li>
+<li>The package builds with both the traditional LAMMPS <code>make</code> system and CMake.</li>
+</ul>
+<hr />
+<h2 id="build-instructions">Build Instructions</h2>
+<h3 id="traditional-make-in-tree">Traditional Make (in-tree)</h3>
+<div class="highlight"><pre><span></span><code>cp<span class="w"> </span>-r<span class="w"> </span>CoupMPM/<span class="w"> </span>/path/to/lammps/src/COUPMPM/
+<span class="nb">cd</span><span class="w"> </span>/path/to/lammps/src
+make<span class="w"> </span>yes-coupmpm
+make<span class="w"> </span>-j8<span class="w"> </span>mpi
+</code></pre></div>
+<h3 id="cmake">CMake</h3>
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>/path/to/lammps/build
+cmake<span class="w"> </span>-D<span class="w"> </span><span class="nv">PKG_COUPMPM</span><span class="o">=</span>on<span class="w"> </span>../cmake
+make<span class="w"> </span>-j8
+</code></pre></div>
+<hr />
+<h2 id="usage-and-syntax">Usage and Syntax</h2>
+<h3 id="fix-command-syntax">Fix Command Syntax</h3>
+<p>The package is now split into a parent fix and four optional companion fixes.
+The parent fix <strong>must</strong> be defined before any companion fix.</p>
+<h4 id="parent-fix-fix-coupmpm">Parent fix (<code>fix coupmpm</code>)</h4>
+<div class="highlight"><pre><span></span><code>fix ID group-ID coupmpm              \
+    grid &lt;dx&gt; &lt;dy&gt; &lt;dz&gt;              \
+    kernel &lt;linear|bspline2|bspline3&gt; \
+    bbar &lt;yes|no&gt;                    \
+    constitutive &lt;neohookean mu V kappa V \
+                 |mooneyrivlin C1 V C2 V kappa V&gt; \
+    dt_auto &lt;yes|no&gt;                 \
+    energy_check &lt;yes|no&gt;            \
+    cfl &lt;val&gt;                        \
+    rho0 &lt;val&gt;
+</code></pre></div>
+<h4 id="companion-fix-contact-fix-coupmpmcontact">Companion fix: contact (<code>fix coupmpm/contact</code>)</h4>
+<div class="highlight"><pre><span></span><code>fix ID group-ID coupmpm/contact \
+    method &lt;none|bardenhagen [mu V] [adhesion V]|penalty&gt;
+</code></pre></div>
+<h4 id="companion-fix-cohesive-zones-fix-coupmpmcohesive">Companion fix: cohesive zones (<code>fix coupmpm/cohesive</code>)</h4>
+<div class="highlight"><pre><span></span><code>fix ID group-ID coupmpm/cohesive    \
+    law &lt;needleman|linear|receptor&gt; \
+    sigma &lt;val&gt;                     \
+    delta &lt;val&gt;                     \
+    delta_max &lt;val&gt;                 \
+    form_dist &lt;val&gt;                 \
+    interval &lt;N&gt;
+</code></pre></div>
+<h4 id="companion-fix-adaptivity-fix-coupmpmadaptivity">Companion fix: adaptivity (<code>fix coupmpm/adaptivity</code>)</h4>
+<div class="highlight"><pre><span></span><code>fix ID group-ID coupmpm/adaptivity \
+    J_split &lt;val&gt;                  \
+    J_merge &lt;val&gt;                  \
+    interval &lt;N&gt;
+</code></pre></div>
+<h4 id="companion-fix-output-fix-coupmpmoutput">Companion fix: output (<code>fix coupmpm/output</code>)</h4>
+<div class="highlight"><pre><span></span><code>fix ID group-ID coupmpm/output    \
+    vtk_interval &lt;N&gt;              \
+    vtk_prefix &lt;prefix&gt;           \
+    surface_interval &lt;N&gt;          \
+    surface_alpha &lt;val&gt;
+</code></pre></div>
+<blockquote>
+<p><strong>Prerequisites:</strong> The simulation must use <code>atom_style mpm</code>. All keywords are optional; defaults are listed in the table below. Each companion fix must appear <strong>after</strong> <code>fix coupmpm</code> in the input script.</p>
+</blockquote>
+<h3 id="keyword-reference">Keyword Reference</h3>
+<h4 id="fix-coupmpm-keywords"><code>fix coupmpm</code> keywords</h4>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Arguments</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>grid</code></td>
+<td><code>dx dy dz</code></td>
+<td><code>0.1 0.1 0.1</code></td>
+<td>Background grid cell spacings in the <em>x</em>, <em>y</em>, and <em>z</em> directions (simulation-length units).</td>
+</tr>
+<tr>
+<td><code>kernel</code></td>
+<td><code>linear</code> | <code>bspline2</code> | <code>bspline3</code></td>
+<td><code>linear</code></td>
+<td>Shape-function kernel. <code>linear</code> uses tent functions (support ±1 cell); <code>bspline2</code> and <code>bspline3</code> use quadratic and cubic B-spline kernels (support ±1.5 and ±2 cells, respectively), which increase smoothness and reduce quadrature noise.</td>
+</tr>
+<tr>
+<td><code>bbar</code></td>
+<td><code>yes</code> | <code>no</code></td>
+<td><code>yes</code></td>
+<td>Enable the B-bar volumetric anti-locking correction. Recommended for nearly incompressible materials (Poisson's ratio &gt; 0.45).</td>
+</tr>
+<tr>
+<td><code>constitutive</code></td>
+<td><code>neohookean mu V kappa V</code> | <code>mooneyrivlin C1 V C2 V kappa V</code></td>
+<td>Neo-Hookean with μ = 1 × 10³, κ = 1 × 10⁴</td>
+<td>Hyperelastic constitutive model. <code>neohookean</code> requires the shear modulus <code>mu</code> and bulk modulus <code>kappa</code> (both &gt; 0). <code>mooneyrivlin</code> (stub) requires the two deviatoric coefficients and the bulk modulus.</td>
+</tr>
+<tr>
+<td><code>dt_auto</code></td>
+<td><code>yes</code> | <code>no</code></td>
+<td><code>yes</code></td>
+<td>Automatically adjust the LAMMPS timestep at each step to satisfy the CFL criterion <code>dt = cfl * dx / c_wave</code>. When <code>no</code>, the timestep specified in the input script is used unchanged.</td>
+</tr>
+<tr>
+<td><code>energy_check</code></td>
+<td><code>yes</code> | <code>no</code></td>
+<td><code>no</code></td>
+<td>Print a kinetic + strain energy balance to the log at every step. Useful for validating conservation in single-rank benchmarks.</td>
+</tr>
+<tr>
+<td><code>cfl</code></td>
+<td><code>val</code></td>
+<td><code>0.3</code></td>
+<td>CFL safety factor applied to the acoustic wave-speed estimate when <code>dt_auto yes</code> is active. Typical values are 0.2–0.5.</td>
+</tr>
+<tr>
+<td><code>rho0</code></td>
+<td><code>val</code></td>
+<td><code>1000.0</code></td>
+<td>Reference (initial) mass density in simulation units. Used for CFL wave-speed estimation and adaptive-particle mass initialisation.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="fix-coupmpmcontact-keywords"><code>fix coupmpm/contact</code> keywords</h4>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Arguments</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>method</code></td>
+<td><code>none</code> | <code>bardenhagen [mu V] [adhesion V]</code> | <code>penalty</code></td>
+<td><code>none</code></td>
+<td>Multi-body contact algorithm. <code>bardenhagen</code> activates the Bardenhagen-Kober impenetrability algorithm; optional sub-keywords set the Coulomb friction coefficient <code>mu</code> (dimensionless, default 0.3) and the surface-energy adhesion parameter <code>adhesion</code> (J m⁻², default 0). <code>penalty</code> activates a spring-dashpot penalty force (parameters set internally).</td>
+</tr>
+</tbody>
+</table>
+<h4 id="fix-coupmpmcohesive-keywords"><code>fix coupmpm/cohesive</code> keywords</h4>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Arguments</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>law</code></td>
+<td><code>needleman</code> | <code>linear</code> | <code>receptor</code></td>
+<td><code>needleman</code></td>
+<td>Traction-separation law for cohesive bonds.</td>
+</tr>
+<tr>
+<td><code>sigma</code></td>
+<td><code>val</code></td>
+<td><code>100.0</code></td>
+<td>Peak cohesive traction σ_max (stress units).</td>
+</tr>
+<tr>
+<td><code>delta</code></td>
+<td><code>val</code></td>
+<td><code>1 × 10⁻⁴</code></td>
+<td>Characteristic separation length δ_0 at peak traction (length units).</td>
+</tr>
+<tr>
+<td><code>delta_max</code></td>
+<td><code>val</code></td>
+<td><code>2 × 10⁻⁴</code></td>
+<td>Failure separation δ_max beyond which a bond is irreversibly ruptured (length units).</td>
+</tr>
+<tr>
+<td><code>form_dist</code></td>
+<td><code>val</code></td>
+<td><code>5 × 10⁻⁴</code></td>
+<td>Maximum particle-pair distance at which a new cohesive bond may form (length units).</td>
+</tr>
+<tr>
+<td><code>interval</code></td>
+<td><code>N</code></td>
+<td><code>10</code></td>
+<td>Check for new bond-formation candidates and rupture events every <em>N</em> timesteps.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="fix-coupmpmadaptivity-keywords"><code>fix coupmpm/adaptivity</code> keywords</h4>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Arguments</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>J_split</code></td>
+<td><code>val</code></td>
+<td><code>2.0</code></td>
+<td>Jacobian upper threshold. A particle with <em>J</em> &gt; <code>J_split</code> is split into child particles to restore resolution in highly stretched regions.</td>
+</tr>
+<tr>
+<td><code>J_merge</code></td>
+<td><code>val</code></td>
+<td><code>0.3</code></td>
+<td>Jacobian lower threshold. Particles with <em>J</em> &lt; <code>J_merge</code> are candidates for merging with a nearest neighbour to remove over-compressed particles.</td>
+</tr>
+<tr>
+<td><code>interval</code></td>
+<td><code>N</code></td>
+<td><code>20</code></td>
+<td>Check and apply splitting/merging every <em>N</em> timesteps.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="fix-coupmpmoutput-keywords"><code>fix coupmpm/output</code> keywords</h4>
+<table>
+<thead>
+<tr>
+<th>Keyword</th>
+<th>Arguments</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>vtk_interval</code></td>
+<td><code>N</code></td>
+<td><code>0</code> (disabled)</td>
+<td>Write VTK files (grid and particles) every <em>N</em> timesteps. A PVD time-series index file is maintained automatically.</td>
+</tr>
+<tr>
+<td><code>vtk_prefix</code></td>
+<td><code>prefix</code></td>
+<td><code>coupmpm</code></td>
+<td>Filename prefix for all VTK output files.</td>
+</tr>
+<tr>
+<td><code>surface_interval</code></td>
+<td><code>N</code></td>
+<td><code>10</code></td>
+<td>Recompute the particle surface-normal field every <em>N</em> timesteps using the density-gradient method.</td>
+</tr>
+<tr>
+<td><code>surface_alpha</code></td>
+<td><code>val</code></td>
+<td><code>0.1</code></td>
+<td>Fractional threshold for surface classification: nodes with ρ &lt; <code>surface_alpha</code> × ρ_max are flagged as surface nodes.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="minimal-example">Minimal Example</h2>
+<p>The following LAMMPS input script illustrates a three-dimensional compression test of a soft Neo-Hookean block using the Bardenhagen contact algorithm, APIC transfers with B-bar anti-locking, and VTK output:</p>
+<div class="highlight"><pre><span></span><code># ---------------------------------------------------------------
+# CoupMPM minimal example: uniaxial compression of a soft block
+# ---------------------------------------------------------------
+
+units           si
+dimension       3
+boundary        f f f
+
+atom_style      mpm
+atom_modify     map array
+
+read_data       block.data          # atom-ID mol-ID type vol0 x y z
+
+# Parent fix: grid, kernel, constitutive model
+fix mpm all coupmpm                 \
+    grid 0.05 0.05 0.05             \
+    kernel bspline2                 \
+    bbar yes                        \
+    constitutive neohookean mu 1e4 kappa 1e5 \
+    dt_auto yes                     \
+    cfl 0.3                         \
+    rho0 1200.0
+
+# Contact companion
+fix contact all coupmpm/contact     \
+    method bardenhagen mu 0.2
+
+# Output companion
+fix viz all coupmpm/output          \
+    vtk_interval 50                 \
+    vtk_prefix compress
+
+# Apply a constant compressive velocity to the top surface group
+fix wall_top top_atoms setforce 0.0 0.0 0.0
+velocity top_atoms set 0.0 0.0 -0.01
+
+thermo          100
+thermo_style    custom step time ke pe etotal
+
+timestep        1e-5
+run             5000
+</code></pre></div>
+<h3 id="cohesive-zone-example-cell-sorting">Cohesive Zone Example (Cell Sorting)</h3>
+<p>To activate the Dynamic Cohesive Zone module for a cell-aggregate simulation:</p>
+<div class="highlight"><pre><span></span><code>fix mpm all coupmpm                         \
+    grid 2.0e-6 2.0e-6 2.0e-6              \
+    kernel bspline3                         \
+    bbar yes                                \
+    constitutive neohookean mu 500.0 kappa 2000.0 \
+    dt_auto yes cfl 0.25 rho0 1050.0
+
+fix contact all coupmpm/contact             \
+    method bardenhagen mu 0.0 adhesion 5e-4
+
+fix cz all coupmpm/cohesive                 \
+    law receptor                            \
+    sigma 200.0                             \
+    delta 5e-7                              \
+    delta_max 1.2e-6                        \
+    form_dist 3e-6                          \
+    interval 5
+
+fix viz all coupmpm/output                  \
+    vtk_interval 100 vtk_prefix cells
+</code></pre></div>
+<hr />
+<h2 id="known-limitations">Known Limitations</h2>
+<p>The following issues are known and deferred for future development:</p>
+<table>
+<thead>
+<tr>
+<th>Issue</th>
+<th>Impact</th>
+<th>Recommended Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>grad-rho</code> field not forward-communicated</td>
+<td>Ghost nodes carry zero density gradient; particles near subdomain boundaries may be misclassified as interior</td>
+<td>Add a <code>forward_comm</code> pass for <code>grad_rho_x/y/z</code></td>
+</tr>
+<tr>
+<td>No reference-configuration cohesive zones</td>
+<td>Cohesive adhesion is range-limited to within one grid cell</td>
+<td>Implement the Crook–Homel reference-configuration method (Phase 2)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="implementation-status">Implementation Status</h2>
+<h3 id="complete">Complete</h3>
+<ul>
+<li><strong><code>atom_vec_mpm</code></strong>: Full MPI pack/unpack for exchange, border, restart, forward, and reverse communication (16 methods). Data file format: <code>atom-ID mol-ID atom-type vol0 x y z</code>.</li>
+<li><strong><code>coupmpm_grid</code></strong>: SoA layout, variable ghost width, grid solve, B-bar normalization, per-body Bardenhagen node tracking.</li>
+<li><strong><code>coupmpm_kernel</code></strong>: Linear, quadratic B-spline, and cubic B-spline kernels with gradients and D_inv; support-range computation.</li>
+<li><strong><code>coupmpm_transfer</code></strong>: P2G (APIC, stress divergence, B-bar, per-body momentum, P2GRecord). G2P (velocity, affine matrix <strong>B</strong>_p, velocity gradient <strong>L</strong>, div_v). Anti-P2G migration protocol. MPI ghost exchange.</li>
+<li><strong><code>coupmpm_stress</code></strong>: Neo-Hookean with Jacobian clamping. Acoustic wave speed for CFL estimation.</li>
+<li><strong><code>coupmpm_contact</code></strong>: Bardenhagen multi-velocity algorithm with geometric contact normal, Coulomb friction, and area-scaled adhesion.</li>
+<li><strong><code>coupmpm_surface</code></strong>: Density-gradient surface detection with global <code>MPI_Allreduce</code> threshold. Nanson area scaling for adhesion.</li>
+<li><strong><code>coupmpm_adaptivity</code></strong>: Jacobian-based particle splitting and nearest-neighbour merging with LAMMPS atom-management integration.</li>
+<li><strong><code>coupmpm_cohesive</code></strong>: Dynamic Cohesive Zone module with three traction-separation laws and runtime bond formation/rupture.</li>
+<li><strong><code>coupmpm_io</code></strong>: Grid VTK, particle VTK, and PVD time-series output.</li>
+<li><strong><code>fix_coupmpm</code></strong> (parent): Keyword parsing, grid/MPI setup, complete Verlet timestep loop (P2G → grid solve → G2P), CFL control.  Exposes public state for companion fixes.</li>
+<li><strong><code>fix_coupmpm_contact</code></strong>: Companion fix wrapping <code>MPMContact</code>; called by parent at pre-P2G and post-grid-solve.</li>
+<li><strong><code>fix_coupmpm_cohesive</code></strong>: Companion fix for dynamic cohesive zones; force injection via parent callback; bond detection and damage update in <code>end_of_step</code>; <code>pack/unpack_exchange</code> for bond migration.</li>
+<li><strong><code>fix_coupmpm_adaptivity</code></strong>: Companion fix for particle splitting and merging in <code>end_of_step</code>.</li>
+<li><strong><code>fix_coupmpm_output</code></strong>: Companion fix for VTK output and surface detection in <code>end_of_step</code>.</li>
+</ul>
+<h3 id="stubs-and-future-work">Stubs and Future Work</h3>
+<ul>
+<li>Mooney-Rivlin constitutive model (stub only)</li>
+<li>Generalized Maxwell viscoelastic model</li>
+<li>AFLIP blended transfer scheme</li>
+<li>Reference-configuration cohesive zones (Crook–Homel)</li>
+<li><code>pair_style mpm/penalty</code> for penalty contact</li>
+<li>Reaction-diffusion chemistry coupling</li>
+<li>Checkpoint/restart support</li>
+</ul>
+<hr />
+<h2 id="key-physics-notes">Key Physics Notes</h2>
+<ol>
+<li>
+<p><strong>B-bar two-pass</strong>: <code>raw_div_v</code> is mass-weighted during P2G. It must be normalized by the nodal mass <strong>after</strong> <code>reverse_comm</code>, not before.</p>
+</li>
+<li>
+<p><strong>APIC affine matrix</strong>: <code>Bp</code> stores <strong>C</strong>_p. The APIC velocity contribution at a node is <code>v_p + C_p · (x_node − x_p)</code>. <code>D_inv</code> is applied during G2P, not during P2G.</p>
+</li>
+<li>
+<p><strong>Ghost exchange completeness</strong>: The reverse communication includes all P2G accumulation fields: mass, momentum, <code>force_int</code>, <code>force_ext</code>, <code>raw_div_v</code>, and — when Bardenhagen contact is active — the per-body <code>NodeBodyData</code> (mass, momentum, and centre-of-mass per body per node).</p>
+</li>
+<li>
+<p><strong>Contact normal must be geometric</strong>: Using Δv / |Δv| as the contact normal collapses the normal/tangential decomposition. The momentum-direction difference between bodies provides a kinematics-independent geometric normal.</p>
+</li>
+<li>
+<p><strong>Anti-P2G timing</strong>: LAMMPS Verlet order is <code>initial_integrate</code> → forces → <code>final_integrate</code> → <code>comm::exchange</code>. Executing anti-P2G in <code>final_integrate</code> is correct because it runs before particle migration.</p>
+</li>
+<li>
+<p><strong>Adaptive-particle mass</strong>: When adaptivity is enabled, particle mass is computed from <code>vol0 × rho0</code> rather than the per-type LAMMPS mass table to ensure conservation through split/merge cycles.</p>
+</li>
+<li>
+<p><strong>Surface detection threshold</strong>: <code>rho_max</code> must be globally reduced via <code>MPI_Allreduce(MPI_MAX)</code> before computing the surface threshold; otherwise each rank applies a different cut-off.</p>
+</li>
+</ol>
+<hr />
+<h2 id="design-correspondence-with-couplb">Design Correspondence with CoupLB</h2>
+<p>CoupMPM shares architectural patterns with the companion CoupLB Lattice-Boltzmann package:</p>
+<table>
+<thead>
+<tr>
+<th>CoupLB</th>
+<th>CoupMPM</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Grid SoA with <code>f[Q * ntotal]</code></td>
+<td><code>MPMGrid</code> SoA with mass / momentum / force arrays</td>
+<td>Same ghost-inclusive linear indexing</td>
+</tr>
+<tr>
+<td><code>Streaming::exchange_dim</code></td>
+<td><code>MPMGhostExchange::reverse_dim</code> / <code>forward_dim</code></td>
+<td>Same six-face neighbour topology</td>
+</tr>
+<tr>
+<td><code>IBM::spread</code> / <code>interpolate</code></td>
+<td><code>p2g</code> / <code>g2p</code> (B-spline kernel loops)</td>
+<td>Structurally identical loop patterns</td>
+</tr>
+<tr>
+<td><code>IO::write_vtk</code> (MPI <code>Gatherv</code>)</td>
+<td><code>MPMIO::write_grid_vtk</code></td>
+<td>Nearly identical gather-and-write logic</td>
+</tr>
+<tr>
+<td><code>exchange_forces</code> (reverse comm)</td>
+<td><code>reverse_comm</code></td>
+<td>Same ghost-to-owner accumulation protocol</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="validation-roadmap">Validation Roadmap</h2>
+<h3 id="phase-0-single-rank-benchmarks">Phase 0 — Single-rank benchmarks</h3>
+<ol>
+<li>Patch test: deformation gradient <strong>F</strong> remains identity under zero applied velocity.</li>
+<li>1D elastic wave: wave speed = √((κ + 4μ/3) / ρ₀).</li>
+<li>Particle adaptivity conservation check: total mass and momentum invariant through split/merge cycles.</li>
+</ol>
+<h3 id="phase-1-multi-rank-benchmarks">Phase 1 — Multi-rank benchmarks</h3>
+<ol>
+<li>1D wave on 4 MPI ranks: momentum drift &lt; 10⁻¹⁰ after 1000 steps.</li>
+<li>Bardenhagen contact across MPI subdomain boundaries.</li>
+<li>Surface detection consistency: surface flags identical regardless of domain decomposition.</li>
+</ol>
+<h3 id="phase-2-contact-benchmarks">Phase 2 — Contact benchmarks</h3>
+<ol>
+<li>Hertz contact: contact area <em>a</em>³ ∝ applied load <em>P</em>.</li>
+<li>JKR adhesion: pull-off force = (3/2)π γ R.</li>
+<li>Sliding block on inclined plane: friction coefficient recovery.</li>
+</ol>
+<h3 id="phase-3-biological-applications">Phase 3 — Biological applications</h3>
+<ol>
+<li>Cell sorting via differential adhesion (Steinberg model).</li>
+<li>Cytokinetic ring contraction during cell division.</li>
+<li>Coupled LBM-MPM simulation of a cell in shear flow.</li>
+</ol>
+<hr />
+<h2 id="references">References</h2>
+<ul>
+<li>Jiang, C., Schroeder, C., Selle, A., Teran, J., &amp; Stomakhin, A. (2015). The affine particle-in-cell method. <em>ACM Transactions on Graphics</em>, 34(4), 51.</li>
+<li>Jiang, C., Schroeder, C., &amp; Teran, J. (2017). An angular momentum conserving affine-particle-in-cell method. <em>Journal of Computational Physics</em>, 338, 137–164.</li>
+<li>Bardenhagen, S. G., Brackbill, J. U., &amp; Sulsky, D. (2000). The material-point method for granular materials. <em>Computer Methods in Applied Mechanics and Engineering</em>, 187(3–4), 529–541.</li>
+<li>Crook, A., &amp; Homel, M. (2026). Reference-configuration cohesive zones for MPM. <em>Computer Methods in Applied Mechanics and Engineering</em> (in press).</li>
+<li>Kakouris, E. G., &amp; Triantafyllou, S. P. (2019). Phase-field material point method for brittle fracture. <em>International Journal for Numerical Methods in Engineering</em>, 120(3), 257–279.</li>
+<li>Fei, Y., Gao, M., Li, M., &amp; Jiang, C. (2021). A massively parallel and scalable multi-GPU material point method. <em>ACM Transactions on Graphics</em>, 40(4), 30.</li>
+<li>Blatny, L., &amp; Gaume, J. (2025). A versatile snow and ice rheology for the material point method. <em>Geoscientific Model Development</em>, 18, 389–413.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.indexes"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

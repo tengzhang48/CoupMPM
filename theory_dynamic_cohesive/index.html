@@ -1,0 +1,1889 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://tengzhang48.github.io/CoupMPM/theory_dynamic_cohesive/">
+      
+      
+        <link rel="prev" href="../theory_bardenhagen_contact/">
+      
+      
+        <link rel="next" href="../theory_adaptivity/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+    
+    
+      
+        <title>Dynamic Cohesive Zones - CoupMPM Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#theory-dynamic-particle-based-cohesive-zones" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="CoupMPM Documentation" class="md-header__button md-logo" aria-label="CoupMPM Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CoupMPM Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Dynamic Cohesive Zones
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tengzhang48/CoupMPM" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tengzhang48/CoupMPM
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="CoupMPM Documentation" class="md-nav__button md-logo" aria-label="CoupMPM Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    CoupMPM Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tengzhang48/CoupMPM" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tengzhang48/CoupMPM
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../keywords/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Keywords & Syntax
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory Manual
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory Manual
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory Manual
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory_apic_transfer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core MPM & APIC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory_bbar_locking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    B-bar Anti-Locking
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory_bardenhagen_contact/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Body Contact
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dynamic Cohesive Zones
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dynamic Cohesive Zones
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-bond-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Bond Lifecycle
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Bond Lifecycle">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-formation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Formation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-force-computation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Force Computation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-damage-update-and-failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Damage Update and Failure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-separation-decomposition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Separation Decomposition
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-modified-needleman-xu-traction-separation-law" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Modified Needleman-Xu Traction-Separation Law
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Modified Needleman-Xu Traction-Separation Law">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-cohesive-potential" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Cohesive Potential
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-normal-traction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Normal Traction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-tangential-traction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Tangential Traction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-damage-and-failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Damage and Failure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-bell-model-for-receptor-ligand-biological-adhesion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Bell Model for Receptor-Ligand Biological Adhesion
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Bell Model for Receptor-Ligand Biological Adhesion">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-physical-background" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Physical Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-damage-rate-equation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Damage Rate Equation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-traction-law" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Traction Law
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-biological-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Biological Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-nanson-normal-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Nanson Normal Update
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Nanson Normal Update">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-motivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Motivation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-mass-weighted-average-cofactor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Mass-Weighted Average Cofactor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-cofactor-computation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Cofactor Computation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-summary-of-the-per-timestep-dpbcz-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Summary of the Per-Timestep DPBCZ Algorithm
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-comparison-with-traditional-fem-cohesive-zones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Comparison with Traditional FEM Cohesive Zones
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory_adaptivity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Particle Adaptivity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation Status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-bond-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Bond Lifecycle
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Bond Lifecycle">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-formation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Formation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-force-computation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Force Computation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-damage-update-and-failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Damage Update and Failure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-separation-decomposition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Separation Decomposition
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-modified-needleman-xu-traction-separation-law" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Modified Needleman-Xu Traction-Separation Law
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Modified Needleman-Xu Traction-Separation Law">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-cohesive-potential" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Cohesive Potential
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-normal-traction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Normal Traction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-tangential-traction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Tangential Traction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-damage-and-failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Damage and Failure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-bell-model-for-receptor-ligand-biological-adhesion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Bell Model for Receptor-Ligand Biological Adhesion
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Bell Model for Receptor-Ligand Biological Adhesion">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-physical-background" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Physical Background
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-damage-rate-equation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Damage Rate Equation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-traction-law" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Traction Law
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-biological-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Biological Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-nanson-normal-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Nanson Normal Update
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Nanson Normal Update">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-motivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Motivation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-mass-weighted-average-cofactor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Mass-Weighted Average Cofactor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-cofactor-computation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Cofactor Computation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-summary-of-the-per-timestep-dpbcz-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Summary of the Per-Timestep DPBCZ Algorithm
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-comparison-with-traditional-fem-cohesive-zones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Comparison with Traditional FEM Cohesive Zones
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="theory-dynamic-particle-based-cohesive-zones">Theory: Dynamic Particle-Based Cohesive Zones</h1>
+<h2 id="1-overview">1. Overview</h2>
+<p>Traditional cohesive zone methods in the Finite Element Method (FEM) require cohesive
+interface elements to be inserted <em>a priori</em> along anticipated crack paths or cell
+boundaries in a fixed reference mesh (Needleman 1987; Xu &amp; Needleman 1994). This
+dependence on a global reference configuration makes such methods unsuitable for problems
+where the topology of adhesive contacts changes continuously — most prominently in
+<strong>cell sorting</strong> (Steinberg 1963; Graner &amp; Glazier 1992) and <strong>tissue fracture</strong> under
+large motions.</p>
+<p>CoupMPM implements a <strong>Dynamic Particle-Based Cohesive Zone</strong> (DPBCZ) framework that
+overcomes this limitation. Cohesive bonds are not pre-specified; instead, they are formed
+<em>at runtime</em> whenever two surface particles from different bodies come within a prescribed
+formation distance. Each bond captures its own reference state (positions, normal,
+reference area) at the moment of creation, so no global reference configuration is
+required. Key consequences are:</p>
+<ul>
+<li>A single simulation can simultaneously handle <strong>cell sorting</strong> (bonds forming between
+  cells that contact for the first time) and <strong>tissue fracture</strong> (bonds breaking under
+  excessive load or fatigue).</li>
+<li>Bonds are history-dependent: each bond accumulates a scalar damage variable <span class="arithmatex">\(D \in
+  [0, 1]\)</span> that irreversibly softens the traction.</li>
+<li>After complete failure (<span class="arithmatex">\(D = 1\)</span>), the bond is deactivated and the pair transitions
+  seamlessly to the frictional contact algorithm of Bardenhagen et al. (2000)
+  implemented in <code>coupmpm_contact.h</code>.</li>
+<li>Type-pair parameters (<code>sigma_max</code>, <code>delta_n</code>, <code>base_rate</code>, …) allow <strong>differential
+  adhesion</strong> — different cell-type pairs can have distinct binding strengths, reproducing
+  the Differential Adhesion Hypothesis at the continuum scale.</li>
+</ul>
+<p>The DPBCZ is implemented in <code>coupmpm_cohesive.h</code> and integrated into the MPM timestep
+via <code>fix_coupmpm.cpp</code>.</p>
+<hr />
+<h2 id="2-bond-lifecycle">2. Bond Lifecycle</h2>
+<h3 id="21-formation">2.1 Formation</h3>
+<p>Every <code>bond_check_interval</code> timesteps the method <code>detect_new_bonds()</code> scans all pairs
+<span class="arithmatex">\((i, j)\)</span> of surface particles from <em>different</em> bodies that are within the LAMMPS neighbor
+list. A bond is created when</p>
+<div class="arithmatex">\[
+\| \mathbf{x}_j - \mathbf{x}_i \| &lt; d_{\mathrm{form}},
+\]</div>
+<p>where <span class="arithmatex">\(d_{\mathrm{form}}\)</span> is the type-pair formation distance. At the moment of creation
+the bond stores its <strong>reference state</strong>:</p>
+<div class="arithmatex">\[
+\mathbf{x}_{0,i}, \quad \mathbf{x}_{0,j}, \quad
+\mathbf{n}_0 = \frac{\mathbf{x}_j - \mathbf{x}_i}{\|\mathbf{x}_j - \mathbf{x}_i\|},
+\quad \delta_0 = \|\mathbf{x}_j - \mathbf{x}_i\|, \quad
+A_{\mathrm{ref}} = (V_i^0)^{2/3} \text{ (3-D)}.
+\]</div>
+<h3 id="22-force-computation">2.2 Force Computation</h3>
+<p>At every timestep <code>compute_forces()</code> evaluates the traction on each active bond and
+accumulates forces directly into the particle force array <code>f[]</code>. These forces enter the
+MPM P2G step as external forces, exactly as LAMMPS pair-style interactions do.</p>
+<p>The total cohesive force on particle <span class="arithmatex">\(i\)</span> is</p>
+<div class="arithmatex">\[
+\mathbf{f}_i^{\mathrm{coh}}
+= A_{\mathrm{ref}} \, (1 - D) \left[ T_n \, \hat{\mathbf{n}} + T_t \, \hat{\mathbf{t}} \right],
+\]</div>
+<p>and an equal and opposite force is applied to particle <span class="arithmatex">\(j\)</span>, preserving Newton's Third Law.</p>
+<h3 id="23-damage-update-and-failure">2.3 Damage Update and Failure</h3>
+<p>After <code>compute_forces()</code>, <code>update_damage_and_break()</code> advances the damage variable and
+deactivates any bond that has exceeded the failure criterion (Section 4.3 and 5.2).</p>
+<hr />
+<h2 id="3-separation-decomposition">3. Separation Decomposition</h2>
+<p>Let <span class="arithmatex">\(\boldsymbol{\delta}\)</span> denote the relative displacement of the bond since formation:</p>
+<div class="arithmatex">\[
+\boldsymbol{\delta} = (\mathbf{x}_j - \mathbf{x}_i) - (\mathbf{x}_{0,j} - \mathbf{x}_{0,i}).
+\]</div>
+<p>The deformed bond normal <span class="arithmatex">\(\hat{\mathbf{n}}\)</span> is computed via the Nanson relation
+(Section 6). The separation is then decomposed as</p>
+<div class="arithmatex">\[
+\delta_n = \boldsymbol{\delta} \cdot \hat{\mathbf{n}},
+\qquad
+\boldsymbol{\delta}_t = \boldsymbol{\delta} - \delta_n \, \hat{\mathbf{n}},
+\qquad
+\delta_t = \|\boldsymbol{\delta}_t\|,
+\qquad
+\hat{\mathbf{t}} = \frac{\boldsymbol{\delta}_t}{\delta_t}.
+\]</div>
+<p>A positive <span class="arithmatex">\(\delta_n &gt; 0\)</span> corresponds to opening (mode I); a non-zero <span class="arithmatex">\(\delta_t\)</span>
+corresponds to sliding (mode II/III).</p>
+<hr />
+<h2 id="4-modified-needleman-xu-traction-separation-law">4. Modified Needleman-Xu Traction-Separation Law</h2>
+<h3 id="41-cohesive-potential">4.1 Cohesive Potential</h3>
+<p>The Needleman-Xu (1994) cohesive law derives from a mixed-mode potential energy density.
+Following Xu &amp; Needleman (1994), define the mode-I work of separation</p>
+<div class="arithmatex">\[
+\phi_n = e \, \sigma_{\max} \, \delta_n^*,
+\]</div>
+<p>where <span class="arithmatex">\(e = \exp(1)\)</span>, <span class="arithmatex">\(\sigma_{\max}\)</span> is the peak normal traction, and <span class="arithmatex">\(\delta_n^*\)</span> is the
+characteristic normal separation. The normal and tangential ratios are</p>
+<div class="arithmatex">\[
+\bar{\delta}_n = \frac{\delta_n}{\delta_n^*}, \qquad \bar{\delta}_t = \frac{\delta_t}{\delta_t^*}.
+\]</div>
+<h3 id="42-normal-traction">4.2 Normal Traction</h3>
+<p>The normal traction is obtained from <span class="arithmatex">\(T_n = -\partial \Phi / \partial \delta_n\)</span>:</p>
+<div class="arithmatex">\[
+\boxed{
+T_n = \frac{\phi_n}{\delta_n^*} \,
+      \bar{\delta}_n \,
+      \exp\!\left(-\bar{\delta}_n\right)
+      \exp\!\left(-\bar{\delta}_t^{\,2}\right).
+}
+\]</div>
+<p>This form peaks at <span class="arithmatex">\(\bar{\delta}_n = 1\)</span> (i.e., <span class="arithmatex">\(\delta_n = \delta_n^*\)</span>), where <span class="arithmatex">\(T_n =
+\sigma_{\max}\)</span>, and decays exponentially for larger separations. The coupling factor
+<span class="arithmatex">\(\exp(-\bar{\delta}_t^{\,2})\)</span> reduces the normal traction when sliding is present.</p>
+<p>In <code>needleman_xu()</code>:
+<div class="highlight"><pre><span></span><code><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">phi_n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">exp</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">sigma_max</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">delta_n</span><span class="p">;</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">dn_ratio</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">delta_n</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">delta_n</span><span class="p">;</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">dt_ratio</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">delta_t</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">delta_t</span><span class="p">;</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">exp_n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dn_ratio</span><span class="p">);</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">exp_t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dt_ratio</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dt_ratio</span><span class="p">);</span>
+
+<span class="n">T_n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">phi_n</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">delta_n</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dn_ratio</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">exp_n</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">exp_t</span><span class="p">;</span>
+</code></pre></div></p>
+<h3 id="43-tangential-traction">4.3 Tangential Traction</h3>
+<p>The tangential traction is obtained from <span class="arithmatex">\(T_t = -\partial \Phi / \partial \delta_t\)</span>. The
+derivative of the coupling factor introduces a factor of <span class="arithmatex">\(2\bar{\delta}_t / \delta_t^*\)</span>.
+An additional factor of <span class="arithmatex">\((1 + \bar{\delta}_n)\)</span> arises from the interaction term in the
+full Xu-Needleman potential. The <strong>negative sign</strong> in the expression below ensures that
+the tangential traction <strong>opposes the slip</strong> direction (i.e., it acts as a restoring
+traction):</p>
+<div class="arithmatex">\[
+\boxed{
+T_t = -\frac{\phi_n}{\delta_t^*} \,
+       2 \bar{\delta}_t \,
+       \left(1 + \bar{\delta}_n\right)
+       \exp\!\left(-\bar{\delta}_n\right)
+       \exp\!\left(-\bar{\delta}_t^{\,2}\right),
+\quad \delta_t &gt; 0.
+}
+\]</div>
+<p>This signed scalar magnitude is multiplied by the unit tangent <span class="arithmatex">\(\hat{\mathbf{t}}\)</span> when
+assembling the force vector, so that the traction vector resists sliding in the actual
+direction of slip.</p>
+<p>In <code>needleman_xu()</code>:
+<div class="highlight"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">fabs</span><span class="p">(</span><span class="n">delta_t</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">1e-20</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">T_t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="p">(</span><span class="n">phi_n</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">delta_t</span><span class="p">)</span>
+<span class="w">        </span><span class="o">*</span><span class="w"> </span><span class="mf">2.0</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dt_ratio</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="mf">1.0</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">dn_ratio</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">exp_n</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">exp_t</span><span class="p">;</span>
+<span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">T_t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<h3 id="44-damage-and-failure">4.4 Damage and Failure</h3>
+<p>Outside the traction laws, a scalar damage variable <span class="arithmatex">\(D\)</span> is evolved by
+<code>update_damage_and_break()</code>. Defining the effective separation ratio</p>
+<div class="arithmatex">\[
+\bar{r} = \sqrt{\left(\frac{\delta_n^{\max}}{\delta_n^*}\right)^2
+              + \left(\frac{\delta_t^{\max}}{\delta_t^*}\right)^2},
+\]</div>
+<p>where <span class="arithmatex">\(\delta_n^{\max}\)</span> and <span class="arithmatex">\(\delta_t^{\max}\)</span> are the running maxima of the normal and
+tangential separations, and the combined failure threshold</p>
+<div class="arithmatex">\[
+\bar{r}_{\mathrm{fail}} = \sqrt{\left(\frac{\delta_n^{\max,\mathrm{fail}}}{\delta_n^*}\right)^2
+                               + \left(\frac{\delta_t^{\max,\mathrm{fail}}}{\delta_t^*}\right)^2},
+\]</div>
+<p>damage accumulates for <span class="arithmatex">\(\bar{r} &gt; 1\)</span> according to</p>
+<div class="arithmatex">\[
+D = \min\!\left(1,\; \frac{\bar{r} - 1}{\bar{r}_{\mathrm{fail}} - 1}\right),
+\]</div>
+<p>and the effective traction is <span class="arithmatex">\((1-D) \, T\)</span>. The bond is deactivated when <span class="arithmatex">\(D \geq 1\)</span> or
+when either <span class="arithmatex">\(\delta_n^{\max} &gt; \delta_n^{\max,\mathrm{fail}}\)</span> or
+<span class="arithmatex">\(\delta_t^{\max} &gt; \delta_t^{\max,\mathrm{fail}}\)</span>.</p>
+<hr />
+<h2 id="5-bell-model-for-receptor-ligand-biological-adhesion">5. Bell Model for Receptor-Ligand Biological Adhesion</h2>
+<h3 id="51-physical-background">5.1 Physical Background</h3>
+<p>The Bell (1978) model describes the thermally activated unbinding of receptor-ligand
+complexes under applied force. The unstressed off-rate <span class="arithmatex">\(k_{\mathrm{off}}^0\)</span> (bond
+breaking per unit time in the absence of load) is accelerated exponentially by a
+mechanical force <span class="arithmatex">\(F\)</span> acting along the unbinding reaction coordinate of length
+<span class="arithmatex">\(x_\beta\)</span> (the <em>reactive compliance</em> or <em>bond compliance</em>):</p>
+<div class="arithmatex">\[
+k_{\mathrm{off}}(F) = k_{\mathrm{off}}^0 \, \exp\!\left(\frac{F \, x_\beta}{k_B T}\right).
+\]</div>
+<p>For a deterministic continuum model (no Brownian fluctuations), the stochastic
+bond-breaking rate is mapped onto a continuous damage rate by normalizing the applied
+traction magnitude <span class="arithmatex">\(T_{\mathrm{mag}}\)</span> by the peak traction <span class="arithmatex">\(\sigma_{\max}\)</span>. The
+force-sensitive exponential is centred at <span class="arithmatex">\(T_{\mathrm{mag}} / \sigma_{\max} = 0.5\)</span> so
+that bonds experience negligible damage at low loads and rapid damage near the peak
+traction.</p>
+<h3 id="52-damage-rate-equation">5.2 Damage Rate Equation</h3>
+<p>The damage rate <span class="arithmatex">\(\dot{D}\)</span> used in CoupMPM is</p>
+<div class="arithmatex">\[
+\boxed{
+\dot{D} = \mathtt{base\_rate} \cdot \exp\!\left(\alpha \left(\frac{T_{\mathrm{mag}}}{\sigma_{\max}} - 0.5\right)\right),
+\quad T_{\mathrm{mag}} / \sigma_{\max} &gt; 0.5,
+}
+\]</div>
+<p>where <span class="arithmatex">\(\alpha = 2\)</span> is the force-sensitivity parameter (controlling the steepness of
+the Bell exponential), <span class="arithmatex">\(T_{\mathrm{mag}} = \sqrt{T_n^2 + T_t^2}\)</span> is the instantaneous
+traction magnitude, and <code>base_rate</code> (<span class="arithmatex">\(= k_{\mathrm{off}}^0\)</span>) is the unstressed
+off-rate (units: <span class="arithmatex">\(\mathrm{time}^{-1}\)</span>). Damage is integrated forward in time by the
+forward-Euler scheme <span class="arithmatex">\(D^{n+1} = D^n + \dot{D} \, \Delta t\)</span>, capped at unity.</p>
+<p>In <code>receptor_ligand()</code>:
+<div class="highlight"><pre><span></span><code><span class="kt">double</span><span class="w"> </span><span class="n">alpha</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0</span><span class="p">;</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">T_ratio</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">T_mag</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">sigma_max</span><span class="p">;</span>
+
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">T_ratio</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0.5</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kt">double</span><span class="w"> </span><span class="n">damage_rate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">base_rate</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">exp</span><span class="p">(</span><span class="n">alpha</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">T_ratio</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">0.5</span><span class="p">));</span>
+<span class="w">  </span><span class="n">damage</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">damage_rate</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dt</span><span class="p">;</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">damage</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">1.0</span><span class="p">)</span><span class="w"> </span><span class="n">damage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<h3 id="53-traction-law">5.3 Traction Law</h3>
+<p>The elastic traction is a linear spring capped at the peak traction:</p>
+<div class="arithmatex">\[
+T_n = \min\!\left(\frac{\sigma_{\max}}{\delta_n^*} \, \delta_n,\; \sigma_{\max}\right),
+\qquad
+T_t = \frac{\tau_{\max}}{\delta_t^*} \, \delta_t.
+\]</div>
+<p>As with the Needleman-Xu law, the effective tractions are scaled by <span class="arithmatex">\((1 - D)\)</span>.</p>
+<h3 id="54-biological-parameters">5.4 Biological Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Symbol</th>
+<th>Typical value</th>
+<th>Physical meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sigma_max</code></td>
+<td><span class="arithmatex">\(\sigma_{\max}\)</span></td>
+<td><span class="arithmatex">\(100\)</span>–<span class="arithmatex">\(10{,}000\,\text{Pa}\)</span></td>
+<td>Maximum receptor-ligand traction</td>
+</tr>
+<tr>
+<td><code>delta_n</code></td>
+<td><span class="arithmatex">\(\delta_n^*\)</span></td>
+<td><span class="arithmatex">\(100\)</span>–<span class="arithmatex">\(500\)</span> nm</td>
+<td>Characteristic receptor reach</td>
+</tr>
+<tr>
+<td><code>base_rate</code></td>
+<td><span class="arithmatex">\(k_{\mathrm{off}}^0\)</span></td>
+<td><span class="arithmatex">\(0.1\)</span>–<span class="arithmatex">\(10\)</span> s<span class="arithmatex">\(^{-1}\)</span></td>
+<td>Thermal off-rate at zero force</td>
+</tr>
+<tr>
+<td><code>alpha</code></td>
+<td><span class="arithmatex">\(\alpha\)</span></td>
+<td><span class="arithmatex">\(2\)</span></td>
+<td>Force sensitivity (Bell parameter)</td>
+</tr>
+<tr>
+<td><code>formation_dist</code></td>
+<td><span class="arithmatex">\(d_{\mathrm{form}}\)</span></td>
+<td><span class="arithmatex">\(2\delta_n^*\)</span></td>
+<td>Bond-formation cutoff</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-nanson-normal-update">6. Nanson Normal Update</h2>
+<h3 id="61-motivation">6.1 Motivation</h3>
+<p>In finite-strain MPM the particles deform continuously. The reference normal <span class="arithmatex">\(\mathbf{n}_0\)</span>
+stored at bond creation is defined in the <em>undeformed</em> frame. To evaluate the traction on
+the <em>current</em> configuration the normal must be transported to the deformed frame. The
+classical result from continuum mechanics (Nanson's formula) states that a material area
+element with reference normal <span class="arithmatex">\(\mathbf{n}_0\)</span> and area <span class="arithmatex">\(dA_0\)</span> maps to a deformed area
+element with normal <span class="arithmatex">\(\mathbf{n}\)</span> and area <span class="arithmatex">\(dA\)</span> via the cofactor of the deformation
+gradient:</p>
+<div class="arithmatex">\[
+\mathbf{n} \, dA = J \mathbf{F}^{-\mathrm{T}} \mathbf{n}_0 \, dA_0
+= \mathrm{cof}(\mathbf{F}) \, \mathbf{n}_0 \, dA_0,
+\]</div>
+<p>where <span class="arithmatex">\(J = \det(\mathbf{F})\)</span> and <span class="arithmatex">\(\mathrm{cof}(\mathbf{F}) = J \mathbf{F}^{-\mathrm{T}}\)</span>.</p>
+<h3 id="62-mass-weighted-average-cofactor">6.2 Mass-Weighted Average Cofactor</h3>
+<p>A cohesive bond connects two particles <span class="arithmatex">\(i\)</span> and <span class="arithmatex">\(j\)</span>, each with its own deformation
+gradient <span class="arithmatex">\(\mathbf{F}_i\)</span> and <span class="arithmatex">\(\mathbf{F}_j\)</span>. Because the bond spans a material interface,
+neither <span class="arithmatex">\(\mathbf{F}_i\)</span> nor <span class="arithmatex">\(\mathbf{F}_j\)</span> alone is representative of the interface. To
+preserve Newton's Third Law across the interface while accounting for both particles'
+deformation states, CoupMPM uses the <strong>mass-weighted average cofactor</strong>:</p>
+<div class="arithmatex">\[
+\boxed{
+\hat{\mathbf{n}} = \frac{\tilde{\mathbf{n}}}{\|\tilde{\mathbf{n}}\|},
+\qquad
+\tilde{\mathbf{n}} =
+\left[\frac{m_i \, \mathrm{cof}(\mathbf{F}_i) + m_j \, \mathrm{cof}(\mathbf{F}_j)}{m_i + m_j}\right]
+\mathbf{n}_0,
+}
+\]</div>
+<p>where <span class="arithmatex">\(m_i\)</span> and <span class="arithmatex">\(m_j\)</span> are the masses of particles <span class="arithmatex">\(i\)</span> and <span class="arithmatex">\(j\)</span>. The result is normalised
+to a unit vector. If either Jacobian is degenerate (<span class="arithmatex">\(|J_i|\)</span> or <span class="arithmatex">\(|J_j| &lt; 10^{-20}\)</span>), the
+algorithm falls back to the undeformed reference normal <span class="arithmatex">\(\mathbf{n}_0\)</span>.</p>
+<p>In component form, the <span class="arithmatex">\(d\)</span>-th component of <span class="arithmatex">\(\tilde{\mathbf{n}}\)</span> is</p>
+<div class="arithmatex">\[
+\tilde{n}_d
+= \sum_{e=1}^{3}
+  \frac{m_i \, [\mathrm{cof}(\mathbf{F}_i)]_{de} + m_j \, [\mathrm{cof}(\mathbf{F}_j)]_{de}}
+       {m_i + m_j}
+  \, n_0^e.
+\]</div>
+<p>In <code>compute_forces()</code>:
+<div class="highlight"><pre><span></span><code><span class="kt">double</span><span class="w"> </span><span class="n">mi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">atom_ptr</span><span class="o">-&gt;</span><span class="n">mass</span><span class="p">[</span><span class="n">atom_ptr</span><span class="o">-&gt;</span><span class="n">type</span><span class="p">[</span><span class="n">li</span><span class="p">]];</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">mj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">atom_ptr</span><span class="o">-&gt;</span><span class="n">mass</span><span class="p">[</span><span class="n">atom_ptr</span><span class="o">-&gt;</span><span class="n">type</span><span class="p">[</span><span class="n">lj</span><span class="p">]];</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">wtot</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mi</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">mj</span><span class="p">;</span>
+
+<span class="kt">double</span><span class="w"> </span><span class="n">nm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">normal</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w"> </span><span class="n">e</span><span class="o">++</span><span class="p">)</span>
+<span class="w">        </span><span class="n">normal</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">((</span><span class="n">mi</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">cof_i</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">d</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">e</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">mj</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">cof_j</span><span class="p">[</span><span class="mi">3</span><span class="o">*</span><span class="n">d</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">e</span><span class="p">])</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">wtot</span><span class="p">)</span>
+<span class="w">                     </span><span class="o">*</span><span class="w"> </span><span class="n">bond</span><span class="p">.</span><span class="n">n0</span><span class="p">[</span><span class="n">e</span><span class="p">];</span>
+<span class="w">    </span><span class="n">nm</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">normal</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">normal</span><span class="p">[</span><span class="n">d</span><span class="p">];</span>
+<span class="p">}</span>
+<span class="n">nm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">sqrt</span><span class="p">(</span><span class="n">nm</span><span class="p">);</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">nm</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">1e-20</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="n">normal</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">nm</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<h3 id="63-cofactor-computation">6.3 Cofactor Computation</h3>
+<p>The cofactor matrix is the transpose of the matrix of minors. For a <span class="arithmatex">\(3 \times 3\)</span> matrix
+<span class="arithmatex">\(\mathbf{F}\)</span> with entries <span class="arithmatex">\(F_{ij}\)</span> (stored in row-major order), the nine independent
+cofactors are:</p>
+<div class="arithmatex">\[
+\begin{aligned}
+[\mathrm{cof}(\mathbf{F})]_{00} &amp;= F_{11}F_{22} - F_{12}F_{21}, \\
+[\mathrm{cof}(\mathbf{F})]_{01} &amp;= F_{12}F_{20} - F_{10}F_{22}, \\
+[\mathrm{cof}(\mathbf{F})]_{02} &amp;= F_{10}F_{21} - F_{11}F_{20}, \\
+[\mathrm{cof}(\mathbf{F})]_{10} &amp;= F_{02}F_{21} - F_{01}F_{22}, \\
+[\mathrm{cof}(\mathbf{F})]_{11} &amp;= F_{00}F_{22} - F_{02}F_{20}, \\
+[\mathrm{cof}(\mathbf{F})]_{12} &amp;= F_{01}F_{20} - F_{00}F_{21}, \\
+[\mathrm{cof}(\mathbf{F})]_{20} &amp;= F_{01}F_{12} - F_{02}F_{11}, \\
+[\mathrm{cof}(\mathbf{F})]_{21} &amp;= F_{02}F_{10} - F_{00}F_{12}, \\
+[\mathrm{cof}(\mathbf{F})]_{22} &amp;= F_{00}F_{11} - F_{01}F_{10}.
+\end{aligned}
+\]</div>
+<p>Note that <span class="arithmatex">\(\mathrm{cof}(\mathbf{F}) = J \mathbf{F}^{-\mathrm{T}}\)</span> when <span class="arithmatex">\(J \neq 0\)</span>, which
+is the standard Nanson relation, but the cofactor is well defined even for singular
+<span class="arithmatex">\(\mathbf{F}\)</span>.</p>
+<hr />
+<h2 id="7-summary-of-the-per-timestep-dpbcz-algorithm">7. Summary of the Per-Timestep DPBCZ Algorithm</h2>
+<p>The following steps are performed within the standard CoupMPM MPM timestep.
+Steps specific to the cohesive zone module are marked <strong>[CZ]</strong>.</p>
+<ol>
+<li>
+<p><strong>[CZ] <code>detect_new_bonds</code></strong> <em>(every <code>bond_check_interval</code> steps)</em> — scan neighbor
+   list for surface-particle pairs within <span class="arithmatex">\(d_{\mathrm{form}}\)</span>; create bonds and record
+   their reference states.</p>
+</li>
+<li>
+<p><strong>[CZ] <code>compute_forces</code></strong> — for each active bond:</p>
+</li>
+<li>Update the deformed normal <span class="arithmatex">\(\hat{\mathbf{n}}\)</span> via the mass-weighted average
+     cofactor (Section 6).</li>
+<li>Decompose <span class="arithmatex">\(\boldsymbol{\delta}\)</span> into <span class="arithmatex">\(\delta_n\)</span> and <span class="arithmatex">\(\delta_t\)</span>.</li>
+<li>Evaluate <span class="arithmatex">\(T_n\)</span> and <span class="arithmatex">\(T_t\)</span> from the selected traction-separation law (Section 4
+     or 5).</li>
+<li>Apply <span class="arithmatex">\((1 - D)\)</span> damage scaling.</li>
+<li>
+<p>Accumulate <span class="arithmatex">\(\pm A_{\mathrm{ref}} (T_n \hat{\mathbf{n}} + T_t \hat{\mathbf{t}})\)</span>
+     into <code>f[li]</code> and <code>f[lj]</code>.</p>
+</li>
+<li>
+<p><strong>P2G</strong> — cohesive forces are transferred to the grid as external forces:
+   <span class="arithmatex">\(\mathbf{f}_i^{\mathrm{ext}} \mathrel{+}= w_{ip} \mathbf{f}_p^{\mathrm{coh}}\)</span>.</p>
+</li>
+<li>
+<p><strong>Grid solve and G2P</strong> — standard MPM integration (see <code>theory_apic_transfer.md</code>).</p>
+</li>
+<li>
+<p><strong>[CZ] <code>update_damage_and_break</code></strong> — advance <span class="arithmatex">\(D\)</span> for each bond; deactivate bonds
+   that have failed.</p>
+</li>
+</ol>
+<hr />
+<h2 id="8-comparison-with-traditional-fem-cohesive-zones">8. Comparison with Traditional FEM Cohesive Zones</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>FEM cohesive elements</th>
+<th>DPBCZ (this work)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bond location defined at</td>
+<td>Pre-processing (mesh insertion)</td>
+<td>Runtime (proximity detection)</td>
+</tr>
+<tr>
+<td>Reference configuration</td>
+<td>Global, fixed at <span class="arithmatex">\(t = 0\)</span></td>
+<td>Per-bond, fixed at formation time</td>
+</tr>
+<tr>
+<td>Topology changes</td>
+<td>Requires remeshing</td>
+<td>Automatic</td>
+</tr>
+<tr>
+<td>Cell sorting</td>
+<td>Not supported</td>
+<td>Native</td>
+</tr>
+<tr>
+<td>Differential adhesion</td>
+<td>Requires type-specific mesh zones</td>
+<td>Single type-pair parameter table</td>
+</tr>
+<tr>
+<td>Fracture path</td>
+<td>Constrained to mesh interfaces</td>
+<td>Arbitrary (follows particle contacts)</td>
+</tr>
+<tr>
+<td>Nanson transport</td>
+<td>Global <span class="arithmatex">\(\mathbf{F}^{-\mathrm{T}}\)</span></td>
+<td>Per-bond mass-weighted average</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="references">References</h2>
+<ul>
+<li>Bell, G. I. (1978). Models for the specific adhesion of cells to cells. <em>Science</em>,
+  200(4342), 618–627. https://doi.org/10.1126/science.347575</li>
+<li>Graner, F., &amp; Glazier, J. A. (1992). Simulation of biological cell sorting using a
+  two-dimensional extended Potts model. <em>Physical Review Letters</em>, 69(13), 2013–2016.
+  https://doi.org/10.1103/PhysRevLett.69.2013</li>
+<li>Needleman, A. (1987). A continuum model for void nucleation by inclusion debonding.
+  <em>Journal of Applied Mechanics</em>, 54(3), 525–531. https://doi.org/10.1115/1.3173064</li>
+<li>Steinberg, M. S. (1963). Reconstruction of tissues by dissociated cells. <em>Science</em>,
+  141(3579), 401–408. https://doi.org/10.1126/science.141.3579.401</li>
+<li>Xu, X.-P., &amp; Needleman, A. (1994). Numerical simulations of fast crack growth in
+  brittle solids. <em>Journal of the Mechanics and Physics of Solids</em>, 42(9), 1397–1434.
+  https://doi.org/10.1016/0022-5096(94)90003-5</li>
+<li>Bardenhagen, S. G., Brackbill, J. U., &amp; Sulsky, D. (2000). The material-point method
+  for granular materials. <em>Computer Methods in Applied Mechanics and Engineering</em>,
+  187(3–4), 529–541. https://doi.org/10.1016/S0045-7825(99)00338-2</li>
+<li>Bonet, J., &amp; Wood, R. D. (2008). <em>Nonlinear Continuum Mechanics for Finite Element
+  Analysis</em> (2nd ed.). Cambridge University Press.
+  https://doi.org/10.1017/CBO9780511755446</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.indexes"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
