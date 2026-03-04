@@ -18,7 +18,7 @@
      area_scale    Current area magnitude
 
    Data file format per atom line:
-     atom-ID  mol-ID  atom-type  x  y  z  vol0
+     atom-ID  mol-ID  atom-type  vol0  x  y  z
 
    All other MPM fields are initialized automatically:
      F_def = identity, everything else = zero.
@@ -88,6 +88,9 @@ public:
   int data_atom_hybrid(int, const char *const *) override;
   void data_atom_post(int) override;
   void create_atom_post(int) override;
+
+  void pack_data(double **) override;
+  void write_data(FILE *, int, double **) override;
 
   bigint memory_usage() override;
 

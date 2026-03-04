@@ -8,7 +8,7 @@
 
    Data file format:
      Atoms section:
-       atom-ID  mol-ID  atom-type  x  y  z  vol0
+       atom-ID  mol-ID  atom-type  vol0  x  y  z
 
    Initialization:
      F_def = I (identity), stress_v = 0, Bp = 0, state = 0,
@@ -59,7 +59,7 @@ AtomVecMPM::AtomVecMPM(LAMMPS *lmp) : AtomVec(lmp)
   // x(3) + tag(1) + type(1) + mask(1) + molecule(1) + v(3) = 10 base fields.
   // For safety, set generously. These are just buffer-size hints.
   size_border = 10 + N_MPM_DOUBLES + N_MPM_INTS;
-  size_data_atom = 7;    // id mol type x y z vol0
+  size_data_atom = 7;    // id mol type vol0 x y z
 
   // Initialize pointers
   F_def = nullptr;
@@ -595,7 +595,7 @@ int AtomVecMPM::unpack_restart(double *buf)
 
 /* ======================================================================
    Data file reading
-   Format: atom-ID mol-ID atom-type x y z vol0
+   Format: atom-ID mol-ID atom-type vol0 x y z
    ====================================================================== */
 
 void AtomVecMPM::data_atom(double *coord, imageint imagetmp,
@@ -611,6 +611,9 @@ void AtomVecMPM::data_atom(double *coord, imageint imagetmp,
   if (type[nlocal] <= 0 || type[nlocal] > atom->ntypes)
     error->one(FLERR, "Invalid atom type in Atoms section of data file");
 
+  // vol0 is at values[3], BEFORE coordinates.
+  // Coordinates are the last 3 columns and have already been extracted
+  // by read_data.cpp into the coord array.
   x[nlocal][0] = coord[0];
   x[nlocal][1] = coord[1];
   x[nlocal][2] = coord[2];
@@ -624,7 +627,7 @@ void AtomVecMPM::data_atom(double *coord, imageint imagetmp,
   // Initialize MPM fields (F=I, stress=0, etc.)
   init_mpm_fields(nlocal);
   // Restore vol0 since init_mpm_fields zeroed it
-  vol0[nlocal] = utils::numeric(FLERR, values[6], true, lmp);
+  vol0[nlocal] = utils::numeric(FLERR, values[3], true, lmp);
 
   atom->nlocal++;
 }
@@ -633,9 +636,39 @@ void AtomVecMPM::data_atom(double *coord, imageint imagetmp,
 
 int AtomVecMPM::data_atom_hybrid(int nlocal, const char *const *values)
 {
-  // For hybrid atom styles: read vol0
+  // For hybrid atom styles: vol0 is the first custom field
   vol0[nlocal] = utils::numeric(FLERR, values[0], true, lmp);
   return 1;
+}
+
+/* ---------------------------------------------------------------------- */
+
+void AtomVecMPM::pack_data(double **buf)
+{
+  int nlocal = atom->nlocal;
+  for (int i = 0; i < nlocal; i++) {
+    buf[i][0] = ubuf(tag[i]).d;
+    buf[i][1] = ubuf(molecule[i]).d;
+    buf[i][2] = ubuf(type[i]).d;
+    buf[i][3] = vol0[i];    // vol0 before coordinates
+    buf[i][4] = x[i][0];   // x y z as last 3 columns
+    buf[i][5] = x[i][1];
+    buf[i][6] = x[i][2];
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+
+void AtomVecMPM::write_data(FILE *fp, int n, double **buf)
+{
+  for (int i = 0; i < n; i++) {
+    fprintf(fp, TAGINT_FORMAT " " TAGINT_FORMAT " %d %-1.16e %-1.16e %-1.16e %-1.16e\n",
+            (tagint) ubuf(buf[i][0]).i,   // id
+            (tagint) ubuf(buf[i][1]).i,   // mol
+            (int) ubuf(buf[i][2]).i,       // type
+            buf[i][3],                     // vol0
+            buf[i][4], buf[i][5], buf[i][6]); // x y z
+  }
 }
 
 /* ---------------------------------------------------------------------- */
