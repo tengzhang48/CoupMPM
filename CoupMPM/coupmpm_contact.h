@@ -77,14 +77,8 @@ public:
                 grid.ntotal * sizeof(int));
   }
 
-  void sync_body_data_mpi(MPMGrid& grid, MPI_Comm world) {
-    // TODO: Implement custom MPI_Reduce for grid.body_data across ghost boundaries
-  }
-
   void post_grid_solve(MPMGrid& grid, double dt, MPI_Comm world) override {
     if (!grid.contact_bardenhagen) return;
-
-    sync_body_data_mpi(grid, world);
 
     const int klo = (grid.dim == 3) ? grid.ghost : 0;
     const int khi = (grid.dim == 3) ? (grid.gz - grid.ghost - 1) : 0;
