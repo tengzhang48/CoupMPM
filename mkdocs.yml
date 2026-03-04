@@ -3,6 +3,8 @@ site_url: https://tengzhang48.github.io/CoupMPM/
 
 theme:
   name: material
+  features:
+    - navigation.indexes
 
 markdown_extensions:
   - pymdownx.arithmatex:
@@ -20,6 +22,7 @@ nav:
   - User Guide:
     - Keywords & Syntax: keywords.md
   - Theory Manual:
+    - theory.md
     - Core MPM & APIC: theory_apic_transfer.md
     - B-bar Anti-Locking: theory_bbar_locking.md
     - Multi-Body Contact: theory_bardenhagen_contact.md
