@@ -1,6 +1,9 @@
 site_name: CoupMPM Documentation
 site_url: https://tengzhang48.github.io/CoupMPM/
 
+repo_name: tengzhang48/CoupMPM
+repo_url: https://github.com/tengzhang48/CoupMPM
+
 theme:
   name: material
   features:
