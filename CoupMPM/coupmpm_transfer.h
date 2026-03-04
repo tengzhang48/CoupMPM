@@ -9,6 +9,7 @@
 #include <cstring>
 #include <cmath>
 #include <cassert>
+#include <stdexcept>
 
 namespace LAMMPS_NS {
 namespace CoupMPM {
@@ -16,6 +17,7 @@ namespace CoupMPM {
 namespace Tags {
   constexpr int REVERSE_BASE = 8000;  // ghost → owner (sum)
   constexpr int FORWARD_BASE = 9000;  // owner → ghost (broadcast)
+  constexpr int FORWARD_GRAD_BASE = 10000;  // owner → ghost (gradient broadcast)
 }
 
 // ============================================================
@@ -226,6 +228,10 @@ public:
     send_hi.resize(max_buf);
     recv_lo.resize(max_buf);
     recv_hi.resize(max_buf);
+    // NOTE: forward_comm_gradients() reuses these buffers with 3 doubles/node.
+    // Safe as long as max_buf >= 3 * max_face_size, which holds because
+    // N_FORWARD_FIELDS (4) > 3. If N_FORWARD_FIELDS is ever reduced below 3,
+    // allocate_buffers must be updated to account for gradient comm.
   }
 
   // After P2G: sum ghost contributions back to owner
@@ -240,6 +246,13 @@ public:
     forward_dim(g, 0);
     forward_dim(g, 1);
     if (g.dim == 3) forward_dim(g, 2);
+  }
+
+  // After compute_grid_gradient(): broadcast density gradients to ghost
+  void forward_comm_gradients(MPMGrid& g) {
+    forward_dim_grad(g, 0);
+    forward_dim_grad(g, 1);
+    if (g.dim == 3) forward_dim_grad(g, 2);
   }
 
 private:
@@ -537,6 +550,84 @@ private:
       g.velocity_new_y[gn] = g.velocity_new_y[in_];
       g.velocity_new_z[gn] = g.velocity_new_z[in_];
       g.div_v[gn]          = g.div_v[in_];
+    });
+  }
+
+  // --- Gradient forward comm helpers ---
+
+  void forward_dim_grad(MPMGrid& g, int d) {
+    if (is_self_periodic(d)) {
+      copy_interior_to_ghost_grad(g, d, 0);
+      copy_interior_to_ghost_grad(g, d, 1);
+      return;
+    }
+    if (neigh[d][0] == MPI_PROC_NULL && neigh[d][1] == MPI_PROC_NULL) return;
+
+    // 3 doubles per node: grad_rho_x, grad_rho_y, grad_rho_z
+    const size_t bs = static_cast<size_t>(3) * ghost_face_size(g, d);
+    if (!bs) return;
+
+    // Reuses existing send/recv buffers. Safe because 3 < N_FORWARD_FIELDS
+    // (N_FORWARD_FIELDS is defined in this class as 4), so bs < max_buf
+    // which was sized for max(N_REVERSE, N_FORWARD) * face_size.
+    // The static_assert below enforces this invariant at compile time.
+    static_assert(N_FORWARD_FIELDS >= 3,
+        "N_FORWARD_FIELDS must be >= 3 for forward_comm_gradients buffer reuse to be safe");
+    // Use a hard check instead of assert() because assert is stripped by -DNDEBUG
+    // (standard on HPC production builds). A buffer overrun inside MPI_Sendrecv
+    // would cause silent memory corruption or an untraceable segfault.
+    if (bs > max_buf) {
+      throw std::runtime_error(
+          "CoupMPM: Gradient comm buffer overflow. "
+          "max_buf too small for forward_comm_gradients.");
+    }
+    const int c = static_cast<int>(bs);
+
+    pack_forward_grad(g, d, 0, send_lo);
+    pack_forward_grad(g, d, 1, send_hi);
+
+    MPI_Sendrecv(send_hi.data(), c, MPI_DOUBLE, neigh[d][1],
+                 Tags::FORWARD_GRAD_BASE + d,
+                 recv_lo.data(), c, MPI_DOUBLE, neigh[d][0],
+                 Tags::FORWARD_GRAD_BASE + d,
+                 comm, MPI_STATUS_IGNORE);
+    MPI_Sendrecv(send_lo.data(), c, MPI_DOUBLE, neigh[d][0],
+                 Tags::FORWARD_GRAD_BASE + 3 + d,
+                 recv_hi.data(), c, MPI_DOUBLE, neigh[d][1],
+                 Tags::FORWARD_GRAD_BASE + 3 + d,
+                 comm, MPI_STATUS_IGNORE);
+
+    if (neigh[d][0] != MPI_PROC_NULL)
+      unpack_forward_grad(g, d, 0, recv_lo);
+    if (neigh[d][1] != MPI_PROC_NULL)
+      unpack_forward_grad(g, d, 1, recv_hi);
+  }
+
+  void pack_forward_grad(const MPMGrid& g, int d, int side,
+                         std::vector<double>& buf) const {
+    size_t c = 0;
+    iter_interior_face(g, d, side, [&](int n) {
+      buf[c++] = g.grad_rho_x[n];
+      buf[c++] = g.grad_rho_y[n];
+      buf[c++] = g.grad_rho_z[n];
+    });
+  }
+
+  void unpack_forward_grad(MPMGrid& g, int d, int side,
+                           const std::vector<double>& buf) {
+    size_t c = 0;
+    iter_ghost(g, d, side, [&](int n) {
+      g.grad_rho_x[n] = buf[c++];
+      g.grad_rho_y[n] = buf[c++];
+      g.grad_rho_z[n] = buf[c++];
+    });
+  }
+
+  void copy_interior_to_ghost_grad(MPMGrid& g, int d, int side) {
+    iter_ghost_and_interior_periodic(g, d, side, [&](int gn, int in_) {
+      g.grad_rho_x[gn] = g.grad_rho_x[in_];
+      g.grad_rho_y[gn] = g.grad_rho_y[in_];
+      g.grad_rho_z[gn] = g.grad_rho_z[in_];
     });
   }
 
