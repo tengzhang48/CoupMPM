@@ -454,31 +454,41 @@ public:
         std::memcpy(normal, bond.n0, 3 * sizeof(double));
       }
 
-      // --- Decompose separation into normal and tangential ---
-      // Subtract initial gap: displacement = current_sep - reference_sep
+      // --- Objective separation decomposition ---
+      // Project current and reference separations onto their RESPECTIVE
+      // normals. Under rigid rotation R:
+      //   sep · n_current = (R·ref_sep)·(R·n0) = ref_sep·n0
+      // so delta_n = 0. Frame-indifferent by construction.
       double ref_sep[3];
       for (int d = 0; d < 3; d++)
         ref_sep[d] = bond.x0_j[d] - bond.x0_i[d];
 
-      double disp[3];
-      for (int d = 0; d < 3; d++)
-        disp[d] = sep[d] - ref_sep[d];
+      // Normal gap: current projection minus reference projection
+      double gap_current = 0.0, gap_ref = 0.0;
+      for (int d = 0; d < 3; d++) {
+        gap_current += sep[d] * normal[d];
+        gap_ref     += ref_sep[d] * bond.n0[d];
+      }
+      double delta_n = gap_current - gap_ref;
 
-      double delta_n = 0;
-      for (int d = 0; d < 3; d++)
-        delta_n += disp[d] * normal[d];
+      // Tangential: strip normal components in respective frames,
+      // then compare magnitudes. Under rigid rotation R:
+      //   sep_t = R·ref_sep_t, so |sep_t| = |ref_sep_t| → delta_t = 0.
+      double sep_t[3], ref_sep_t[3];
+      for (int d = 0; d < 3; d++) {
+        sep_t[d]     = sep[d]     - gap_current * normal[d];
+        ref_sep_t[d] = ref_sep[d] - gap_ref     * bond.n0[d];
+      }
+      double sep_t_mag = std::sqrt(sep_t[0]*sep_t[0] + sep_t[1]*sep_t[1]
+                                   + sep_t[2]*sep_t[2]);
+      double ref_t_mag = std::sqrt(ref_sep_t[0]*ref_sep_t[0] + ref_sep_t[1]*ref_sep_t[1]
+                                   + ref_sep_t[2]*ref_sep_t[2]);
+      double delta_t = sep_t_mag - ref_t_mag;
 
-      double disp_t[3];
-      for (int d = 0; d < 3; d++)
-        disp_t[d] = disp[d] - delta_n * normal[d];
-
-      double delta_t = std::sqrt(disp_t[0]*disp_t[0]
-                               + disp_t[1]*disp_t[1]
-                               + disp_t[2]*disp_t[2]);
-
+      // Tangential direction: along current tangential separation
       double tangent[3] = {0, 0, 0};
-      if (delta_t > 1e-20) {
-        for (int d = 0; d < 3; d++) tangent[d] = disp_t[d] / delta_t;
+      if (sep_t_mag > 1e-20) {
+        for (int d = 0; d < 3; d++) tangent[d] = sep_t[d] / sep_t_mag;
       }
 
       // Track maximum displacement for damage
@@ -645,20 +655,21 @@ public:
                            const CZParams& p,
                            double& T_n, double& T_t)
   {
+    // Clamp normal separation: cohesive zone only resists opening.
+    // Compression is handled by the contact module.
+    // MUST clamp BEFORE exponentials to prevent exp(-dn_ratio) overflow
+    // when delta_n << 0 (compression).
+    const double dn_clamped = std::max(0.0, delta_n);
     const double phi_n = std::exp(1.0) * p.sigma_max * p.delta_n;
-    const double dn_ratio = delta_n / p.delta_n;
+    const double dn_ratio = dn_clamped / p.delta_n;
     const double dt_ratio = delta_t / p.delta_t;
-    const double exp_n = std::exp(-dn_ratio);
+    const double exp_n = std::exp(-dn_ratio); // safe: dn_ratio >= 0
     const double exp_t = std::exp(-dt_ratio * dt_ratio);
 
-    // Normal traction (positive = tension pulling bodies together).
-    // Clamp to zero for compression: contact handles compressive stress.
+    // Normal traction (zero under compression by construction)
     T_n = (phi_n / p.delta_n) * dn_ratio * exp_n * exp_t;
-    if (delta_n < 0.0) T_n = 0.0;
 
-    // Tangential traction: resists sliding in the direction of slip.
-    // T_t > 0 causes force = T_t * tangent on particle i (toward j tangentially)
-    // and -T_t * tangent on particle j (restoring), which correctly opposes slip.
+    // Tangential traction (also safe: uses clamped dn_ratio)
     if (std::fabs(delta_t) > 1e-20) {
       T_t = (phi_n / p.delta_t)
             * 2.0 * dt_ratio * (1.0 + dn_ratio) * exp_n * exp_t;
