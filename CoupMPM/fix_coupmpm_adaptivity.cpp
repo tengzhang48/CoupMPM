@@ -35,6 +35,7 @@ using namespace CoupMPM;
 FixCoupMPMAdaptivity::FixCoupMPMAdaptivity(LAMMPS *lmp, int narg, char **arg)
   : Fix(lmp, narg, arg), parent(nullptr)
 {
+  next_reneighbor = 0;
   if (narg < 3) error->all(FLERR, "Illegal fix coupmpm/adaptivity command");
   adaptivity.enabled = true;
   parse_args(narg, arg);
@@ -240,8 +241,12 @@ void FixCoupMPMAdaptivity::end_of_step()
     if (parent->fix_cohesive && del_idx < atom->nlocal)
       parent->fix_cohesive->deactivate_bonds_for_tag(atom->tag[del_idx]);
 
-    if (del_idx < atom->nlocal - 1)
+    if (del_idx < atom->nlocal - 1) {
       avec->copy(atom->nlocal - 1, del_idx, 1);
+      // avec->copy moves all atom_vec_mpm fields, but mass_p is owned by the
+      // parent fix and must be copied explicitly.
+      parent->mass_p[del_idx] = parent->mass_p[atom->nlocal - 1];
+    }
     atom->nlocal--;
   }
 
@@ -256,6 +261,10 @@ void FixCoupMPMAdaptivity::end_of_step()
       atom->map_init();
       atom->map_set();
     }
+
+    // Force neighbor rebuild next step so any code that reads neighbor lists
+    // (e.g., cohesive bond detection) sees the updated atom arrays.
+    next_reneighbor = update->ntimestep + 1;
   }
 
   adaptivity.n_splits_last = n_splits;
