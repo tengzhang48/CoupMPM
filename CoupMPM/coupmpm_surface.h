@@ -32,26 +32,13 @@ class SurfaceDetector {
 public:
   double alpha;    // threshold parameter (default 0.1)
 
-  // Gradient fields on grid (allocated on first use)
-  std::vector<double> grad_rho_x, grad_rho_y, grad_rho_z;
-  bool allocated;
-
-  SurfaceDetector() : alpha(0.1), allocated(false) {}
-  explicit SurfaceDetector(double a) : alpha(a), allocated(false) {}
-
-  void allocate(int ntotal) {
-    grad_rho_x.assign(ntotal, 0.0);
-    grad_rho_y.assign(ntotal, 0.0);
-    grad_rho_z.assign(ntotal, 0.0);
-    allocated = true;
-  }
+  SurfaceDetector() : alpha(0.1) {}
+  explicit SurfaceDetector(double a) : alpha(a) {}
 
   // Step 1 & 2: Compute density and its gradient on the grid.
   // Call AFTER P2G + reverse_comm (so grid.mass is complete).
-  // The grid.density field is also populated here.
+  // The grid.density and grid.grad_rho_* fields are populated here.
   void compute_grid_gradient(MPMGrid& grid) {
-    if (!allocated || grad_rho_x.size() < static_cast<size_t>(grid.ntotal)) allocate(grid.ntotal);
-
     const double cv = grid.cell_volume();
     if (cv < 1e-30) return;
     const double inv_cv = 1.0 / cv;
@@ -61,9 +48,9 @@ public:
       grid.density[n] = grid.mass[n] * inv_cv;
 
     // Zero gradient fields
-    std::memset(grad_rho_x.data(), 0, grid.ntotal * sizeof(double));
-    std::memset(grad_rho_y.data(), 0, grid.ntotal * sizeof(double));
-    std::memset(grad_rho_z.data(), 0, grid.ntotal * sizeof(double));
+    std::memset(grid.grad_rho_x.data(), 0, grid.ntotal * sizeof(double));
+    std::memset(grid.grad_rho_y.data(), 0, grid.ntotal * sizeof(double));
+    std::memset(grid.grad_rho_z.data(), 0, grid.ntotal * sizeof(double));
 
     // Central finite differences on owned + one layer of ghost
     // (we need ghost values for the stencil; they're available
@@ -85,16 +72,16 @@ public:
           const int n = grid.idx(i, j, k);
 
           // ∂ρ/∂x via central difference
-          grad_rho_x[n] = (grid.density[grid.idx(i+1, j, k)]
+          grid.grad_rho_x[n] = (grid.density[grid.idx(i+1, j, k)]
                          - grid.density[grid.idx(i-1, j, k)]) * inv_2dx;
 
           // ∂ρ/∂y
-          grad_rho_y[n] = (grid.density[grid.idx(i, j+1, k)]
+          grid.grad_rho_y[n] = (grid.density[grid.idx(i, j+1, k)]
                          - grid.density[grid.idx(i, j-1, k)]) * inv_2dy;
 
           // ∂ρ/∂z (3D only)
           if (grid.dim == 3) {
-            grad_rho_z[n] = (grid.density[grid.idx(i, j, k+1)]
+            grid.grad_rho_z[n] = (grid.density[grid.idx(i, j, k+1)]
                            - grid.density[grid.idx(i, j, k-1)]) * inv_2dz;
           }
         }
@@ -105,9 +92,8 @@ public:
   // Step 3 & 4 & 5: Interpolate |∇ρ| to particles, apply threshold.
   // Updates the surface flag for each particle.
   //
-  // Requires: compute_grid_gradient() already called.
-  // For multi-rank: call sync_gradients() to forward-communicate
-  // grad_rho to ghost nodes before this function.
+  // Requires: compute_grid_gradient() already called, and
+  // forward_comm_gradients() called to sync ghost layers for multi-rank.
   //
   // comm_world: MPI communicator for global rho_max reduction.
   //             Pass MPI_COMM_NULL for single-rank.
@@ -178,9 +164,9 @@ public:
             if (w < 1e-20) continue;
 
             const int n = grid.idx(i, j, k);
-            grad_x += w * grad_rho_x[n];
-            gy_val += w * grad_rho_y[n];
-            gz_val += w * grad_rho_z[n];
+            grad_x += w * grid.grad_rho_x[n];
+            gy_val += w * grid.grad_rho_y[n];
+            gz_val += w * grid.grad_rho_z[n];
           }
         }
       }

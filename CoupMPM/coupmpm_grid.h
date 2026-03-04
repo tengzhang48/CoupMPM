@@ -72,6 +72,7 @@ public:
   std::vector<double> div_v;          // velocity divergence (for B-bar)
   std::vector<double> raw_div_v;      // unnormalized div_v (mass-weighted, for two-pass B-bar)
   std::vector<double> density;        // mass density = mass / cell_volume (for surface detection)
+  std::vector<double> grad_rho_x, grad_rho_y, grad_rho_z;  // density gradient (for surface detection)
 
   // --- Per-body fields (allocated only when Bardenhagen contact active) ---
   bool contact_bardenhagen;
@@ -125,6 +126,9 @@ public:
     div_v.assign(ntotal, 0.0);
     raw_div_v.assign(ntotal, 0.0);
     density.assign(ntotal, 0.0);
+    grad_rho_x.assign(ntotal, 0.0);
+    grad_rho_y.assign(ntotal, 0.0);
+    grad_rho_z.assign(ntotal, 0.0);
 
     // Per-body fields
     contact_bardenhagen = bardenhagen;

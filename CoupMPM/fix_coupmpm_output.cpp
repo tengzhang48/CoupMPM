@@ -140,6 +140,10 @@ void FixCoupMPMOutput::end_of_step()
   if (surface_interval > 0 && cur_step % surface_interval == 0) {
     surface_detector.compute_grid_gradient(parent->grid);
 
+    // Forward-communicate gradients to ghost nodes so particles near
+    // rank boundaries can read correct ∇ρ values.
+    parent->ghost_exchange.forward_comm_gradients(parent->grid);
+
     surface_detector.detect_surface(
         parent->grid, parent->kernel, atom->nlocal,
         atom->x, avec->surface,
