@@ -31,7 +31,7 @@ public:
   void init() override;
   void setup(int) override;
   void initial_integrate(int) override;
-  void final_integrate() override;
+  void post_force(int) override;
 
   // ----------------------------------------------------------------
   // Public state — companion fixes access these directly
@@ -51,10 +51,7 @@ public:
   double *L_buffer;    // [nmax*9] velocity gradient (G2P work array)
   double *div_v_buf;   // [nmax] smoothed divergence (G2P work array)
 
-  // P2G records for anti-P2G migration protocol
-  std::vector<CoupMPM::P2GRecord> p2g_records;
-
-  // Step counter (incremented at end of final_integrate)
+  // Step counter (incremented at end of post_force)
   long step_count;
 
   // Companion fix pointers — set by each companion's init()

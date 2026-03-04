@@ -79,7 +79,7 @@ int FixCoupMPM::setmask()
 {
   int mask = 0;
   mask |= INITIAL_INTEGRATE;
-  mask |= FINAL_INTEGRATE;
+  mask |= POST_FORCE;
   return mask;
 }
 
@@ -315,10 +315,43 @@ void FixCoupMPM::setup(int /*vflag*/)
 }
 
 /* ---------------------------------------------------------------------- */
-// Steps 1-3: P2G → reverse comm → grid solve + contact
+// CFL timestep update + position update (using velocity from previous G2P)
+// After this returns, LAMMPS calls exchange() → particles migrate to correct ranks
 /* ---------------------------------------------------------------------- */
 
 void FixCoupMPM::initial_integrate(int /*vflag*/)
+{
+  int nlocal = atom->nlocal;
+  double **x = atom->x;
+  double **v = atom->v;
+
+  // Auto timestep: update dt to the CFL-stable value before position update
+  if (dt_auto) {
+    double dt_cfl = compute_dt_cfl();
+    if (comm->me == 0 && screen && dt_cfl != update->dt)
+      fprintf(screen, "CoupMPM: CFL dt=%.4e (was %.4e)\n",
+              dt_cfl, update->dt);
+    update->dt = dt_cfl;
+  }
+
+  double dt = update->dt;
+
+  // Update positions using velocity from previous G2P
+  for (int i = 0; i < nlocal; i++) {
+    x[i][0] += dt * v[i][0];
+    x[i][1] += dt * v[i][1];
+    if (dim == 3) x[i][2] += dt * v[i][2];
+  }
+
+  // After this returns, LAMMPS calls exchange() → particles migrate
+}
+
+/* ---------------------------------------------------------------------- */
+// Full MPM cycle: P2G → reverse comm → grid solve → forward comm → G2P → F update
+// All particles are guaranteed to be on their correct rank (after exchange()).
+/* ---------------------------------------------------------------------- */
+
+void FixCoupMPM::post_force(int /*vflag*/)
 {
   grow_work_arrays(atom->nmax);
 
@@ -336,16 +369,6 @@ void FixCoupMPM::initial_integrate(int /*vflag*/)
       mass_p[i] = atom->mass[atom->type[i]];
   }
 
-  // Auto timestep: always update dt to the CFL-stable value so the
-  // timestep can both decrease and recover as the simulation evolves.
-  if (dt_auto) {
-    double dt_cfl = compute_dt_cfl();
-    if (comm->me == 0 && screen && dt_cfl != update->dt)
-      fprintf(screen, "CoupMPM: CFL dt=%.4e (was %.4e)\n",
-              dt_cfl, update->dt);
-    update->dt = dt_cfl;
-  }
-
   double **F_def    = avec->F_def;
   double **stress_v = avec->stress_v;
   double *vol0      = avec->vol0;
@@ -355,106 +378,59 @@ void FixCoupMPM::initial_integrate(int /*vflag*/)
   double *stress_flat = (nlocal > 0) ? &stress_v[0][0] : nullptr;
   double *Bp_flat     = (nlocal > 0) ? &Bp_arr[0][0]   : nullptr;
 
-  const double dt = update->dt;
+  double dt = update->dt;
 
-  // --- Step 0b: Cohesive zone forces (before P2G) ---
+  // --- Cohesive zone forces (companion fix writes to atom->f before P2G) ---
   if (fix_cohesive)
     fix_cohesive->compute_forces_before_p2g();
 
-  // --- Step 1: P2G ---
+  // --- P2G ---
   grid.zero_grid();
   if (fix_contact) fix_contact->pre_p2g(grid);
-
-  p2g_records.clear();
-  p2g_records.reserve(nlocal);
 
   p2g(grid, kernel, nlocal,
       x, v, f, mass_p, vol0,
       F_flat, stress_flat, Bp_flat,
       atom->molecule,
-      domain_lo, use_bbar,
-      &p2g_records,
-      atom->tag);
+      domain_lo, use_bbar);
+  // NOTE: no p2g_records/atom->tag — anti-P2G is no longer needed because
+  // particles are already on their correct rank (exchange() ran before post_force).
 
-  // --- Step 2: Reverse ghost communication ---
+  // --- Reverse ghost communication ---
   ghost_exchange.reverse_comm(grid);
+  if (use_bbar) grid.normalize_div_v();
 
-  if (use_bbar)
-    grid.normalize_div_v();
-
-  // --- Step 3: Grid solve + contact ---
+  // --- Grid solve + contact ---
   grid.grid_solve(dt);
+  if (fix_contact) fix_contact->post_grid_solve(grid, dt, world);
 
-  if (fix_contact)
-    fix_contact->post_grid_solve(grid, dt, world);
-}
-
-/* ---------------------------------------------------------------------- */
-// Steps 4-6: forward comm → G2P → F update → position update
-/* ---------------------------------------------------------------------- */
-
-void FixCoupMPM::final_integrate()
-{
-  int nlocal = atom->nlocal;
-  double **x = atom->x;
-  double **v = atom->v;
-  const double dt = update->dt;
-
-  double **Bp_arr = avec->Bp;
-  double *Bp_flat = (nlocal > 0) ? &Bp_arr[0][0] : nullptr;
-
-  // --- Step 4: Forward ghost communication ---
+  // --- Forward ghost communication ---
   ghost_exchange.forward_comm(grid);
 
-  // --- Step 5: G2P ---
+  // --- G2P ---
   g2p(grid, kernel, nlocal,
       x, v, Bp_flat, L_buffer, div_v_buf,
       domain_lo, dt, use_bbar);
 
-  // --- Step 5b: Update F and stress ---
-  double *F_flat      = (nlocal > 0) ? &avec->F_def[0][0]    : nullptr;
-  double *stress_flat = (nlocal > 0) ? &avec->stress_v[0][0] : nullptr;
-  double *state_flat  = (nlocal > 0) ? &avec->mpm_state[0][0]: nullptr;
-
-  update_F_and_stress(
-      nlocal, F_flat, stress_flat,
-      L_buffer, use_bbar ? div_v_buf : nullptr,
-      state_flat, *stress_model, dt, use_bbar, dim);
-
-  // --- Step 5c: Update positions ---
-  for (int i = 0; i < nlocal; i++) {
-    x[i][0] += dt * v[i][0];
-    x[i][1] += dt * v[i][1];
-    if (dim == 3) x[i][2] += dt * v[i][2];
-  }
-
-  // --- Step 6: Anti-P2G for migrating particles ---
-  {
-    int n_migrated = 0;
-
-    for (int i = 0; i < nlocal; i++) {
-      bool outside = false;
-      for (int d = 0; d < dim; d++) {
-        if (x[i][d] < domain->sublo[d] || x[i][d] >= domain->subhi[d]) {
-          outside = true;
-          break;
-        }
-      }
-      if (outside && i < (int)p2g_records.size()) {
-        // Verify the record matches this atom; guard against mid-step reordering.
-        // If the tags don't match (e.g., after atom->sort()), we skip the anti-P2G
-        // for this atom to avoid subtracting a different particle's contributions.
-        // The migrating particle's contributions remain in the grid for this step,
-        // which introduces a one-step grid residual that is corrected next step.
-        if (p2g_records[i].global_tag == atom->tag[i]) {
-          anti_p2g(grid, kernel, p2g_records[i], domain_lo, use_bbar);
-          n_migrated++;
-        }
-      }
-    }
-
-    if (n_migrated > 0)
-      ghost_exchange.reverse_comm(grid);
+  // --- F update + stress ---
+  // CRITICAL: Skip F update during LAMMPS setup() phase (step 0).
+  //
+  // LAMMPS calls post_force() once during setup() before the main
+  // Verlet loop starts. If we update F here, the deformation gradient
+  // advances one step before any position update occurs. Then step 1
+  // updates positions AND F again — F ends up one step ahead of x,
+  // injecting artificial energy that causes immediate oscillation
+  // or explosion.
+  //
+  // G2P velocity update is fine during setup (particles need their
+  // initial velocities from the grid solve). Only the F/stress
+  // update must be skipped.
+  if (step_count > 0) {
+    double *state_flat = (nlocal > 0) ? &avec->mpm_state[0][0] : nullptr;
+    update_F_and_stress(
+        nlocal, F_flat, stress_flat,
+        L_buffer, use_bbar ? div_v_buf : nullptr,
+        state_flat, *stress_model, dt, use_bbar, dim);
   }
 
   step_count++;
