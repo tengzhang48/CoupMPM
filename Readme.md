@@ -65,3 +65,21 @@ The documentation includes:
 - Theory Manual — APIC, B-bar, Bardenhagen contact, and dynamic cohesive zones
 - [Architecture](https://tengzhang48.github.io/CoupMPM/architecture/) — source layout, companion fix design, and key physics notes
 - [Implementation Status](https://tengzhang48.github.io/CoupMPM/status/) — known limitations, completion status, and validation roadmap
+
+## ⚠️ Breaking Change: Data File Column Order
+
+The `Atoms` section column order for `atom_style mpm` has been corrected to follow the universal LAMMPS convention where coordinates (`x y z`) are always the **last three columns**.
+
+**Old (incorrect) format:**
+```
+atom-ID  mol-ID  atom-type  x  y  z  vol0
+```
+
+**New (correct) format:**
+```
+atom-ID  mol-ID  atom-type  vol0  x  y  z
+```
+
+**Why this matters:** LAMMPS's `read_data.cpp` unconditionally extracts the last 3 columns of `size_data_atom` as the physical x, y, z coordinates before passing them to `data_atom()`. With the old format (`id mol type x y z vol0`), LAMMPS was extracting columns 4, 5, 6 as coordinates — yielding `coord = (y, z, vol0)` instead of `(x, y, z)`. Every particle loaded via `read_data` had corrupted positions.
+
+Any existing data files using the old format must be updated: move the `vol0` field from the last column to the fourth column (before `x y z`).
